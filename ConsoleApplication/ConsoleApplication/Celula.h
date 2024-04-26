@@ -7,13 +7,33 @@
 class Celula {
 
 private:
-	Tip tip;
-	Stare stare;
+	Tip tip = Normala;
+	Stare stare = Inchisa;
+	int nrVecini = 0;
 
 public:
-	bool deschide(int x, int y);
 
-	void marcheaza(int x, int y);
+	Tip getTip()const {
+		return tip;
+	}
+
+	void setTip(Tip s) {
+		tip = s;
+	}
+
+	Stare getStare() const {
+		return stare;
+	}
+
+	void setStare(Stare s) {
+		stare = s;
+	}
+
+	int getNrVecini() const {
+		return nrVecini;
+	}
+
+	void setNrVecini(int nr);
 };
 
 #endif

@@ -1,11 +1,12 @@
 #include "Celula.h"
 
-bool Celula::deschide(int x, int y) {
-	// TODO - implement Celula::deschide
-	throw "Not yet implemented";
-}
+using namespace std;
 
-void Celula::marcheaza(int x, int y) {
-	// TODO - implement Celula::marcheaza
-	throw "Not yet implemented";
+void Celula::setNrVecini(int nr) {
+	if (nr >= 0 && nr <= 8) {
+		nrVecini = nr;
+	}
+	else {
+		throw "Numarul de vecini trebuie sa fie intre 0 si 8";
+	}
 }

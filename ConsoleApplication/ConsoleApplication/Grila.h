@@ -2,20 +2,31 @@
 #define GRILA_H
 #include "Celula.h"
 #include <vector>
+#include "Nivel.h"
+
+using namespace std;
 
 class Grila {
 
 private:
-	int dimensiune;
+	int nrLinii;
+	int nrColoane;
 	int numar_mine;
-	std::vector<Celula[]> celule;
+	vector<vector<Celula>> matrice;
+
+	//metode private
+	void plaseaza_mine();
 
 public:
 	bool deschide_celula(int x, int y);
 
 	void marcheaza_celula(int x, int y);
 
-	Grila initializare(int _nivel);
+	Grila& initializare(Nivel _nivel);
+
+	void deschide_celulele_vecine(int x, int y);
+
+	friend void afiseaza_grila(const Grila& grila);
 };
 
 #endif
