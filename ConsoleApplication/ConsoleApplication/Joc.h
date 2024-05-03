@@ -3,10 +3,14 @@
 
 #include "Grila.h"
 #include "Nivel.h"
+#include <string>
 
 class Joc {
 
 private:
+	const char* FISIER = "joc.txt";
+	const char DELIMITER = ' ';
+
 	const float NIVEL_MAX = 34.79f; // 34.79% din celule sunt mine
 	const int NR_MINIM_LINII = 9;
 	const int NR_MINIM_COLOANE = 9;
@@ -24,9 +28,9 @@ public:
 
 	Grila& incepe_joc(Nivel nivel = Mediu16);
 
-	void termina_joc();
+	void joc_pierdut(int x, int y);
 
-	bool actiune_joc(int x, int y, bool deschideORmarcheaza);
+	bool actiune_joc(int y, int x, bool deschideORmarcheaza);
 
 	bool nivelValid(const int x, const int y, const int nrMine) const;
 
@@ -35,6 +39,12 @@ public:
 	}
 
 	bool verificaJocCastigat();
+
+	void salveaza_joc();
+
+	bool incarca_joc();
+
+	bool validareDateFisier(string data);
 };
 
 

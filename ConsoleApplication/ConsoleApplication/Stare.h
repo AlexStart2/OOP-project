@@ -4,8 +4,7 @@
 enum Stare {
 	Inchisa, 
 	Deschisa, 
-	Marcata, 
-	Descoperita
+	Marcata
 };
 
 #endif

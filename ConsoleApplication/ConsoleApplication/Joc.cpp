@@ -1,6 +1,9 @@
 #include "Joc.h"
 #include "Nivel.h"
+#include "Grila.h"
 #include <iostream>
+#include <string>
+#include <fstream>
 
 
 Joc::Joc() {
@@ -15,14 +18,55 @@ Grila& Joc::incepe_joc(Nivel nivel) {
 	return grila;
 }
 
-void Joc::termina_joc() {
-	// TODO - implement Joc::termina_joc
-	throw "Not yet implemented";
+void Joc::joc_pierdut(int y, int x) {
+	x--;
+	y--;
+	if (ConsoleApplication) {
+		cout << "Joc pierdut! Celula (" << ++y << ", " << ++x << ") continea o mina!" << endl;
+		for (int i = 0; i < grila.nrLinii; i++) {
+			for (int j = 0; j < grila.nrColoane; j++) {
+				if (x == i && y == j) {
+					cout << "X-";
+					continue;
+				}
+					
+				if (grila.matrice[i][j].getStare() == Marcata) {
+					if (grila.matrice[i][j].getTip() == Mina) {
+						cout << "C ";
+					}
+					else {
+						cout << "G ";
+					}
+				}
+				else if (grila.matrice[i][j].getTip() == Mina) {
+					cout << "X ";
+				}
+				else if (grila.matrice[i][j].getTip() == Normala) {
+					cout << grila.matrice[i][j].getNrVecini() << " ";
+				}
+				else if (grila.matrice[i][j].getNrVecini() == 0) {
+					cout << "0 ";
+				}
+				else {
+					cout << grila.matrice[i][j].getNrVecini() << " ";
+				}
+			}
+			cout << endl;
+		}
+
+		cout << "Scorul dumneavoastra este: " << scor << endl;
+		cin.get();
+		getchar();
+	}
+	else {
+		// TODO - implement Joc::joc_pierdut
+		throw exception("Not yet implemented");
+	}
 }
 
 
 
-bool Joc::actiune_joc(int x, int y, bool deschideORmarcheaza) {
+bool Joc::actiune_joc(int y, int x, bool deschideORmarcheaza) {
 	x--;
 	y--;
 	if (deschideORmarcheaza) {
@@ -48,6 +92,184 @@ bool Joc::nivelValid(const int x, const int y, const int nrMine) const {
 }
 
 bool Joc::verificaJocCastigat() {
-	// TODO - implement Joc::verificaJocCastigat
-	throw exception("Not yet implemented");
+
+	if (grila.nrMineMarcate == grila.numar_mine) {
+
+		for (int i = 0; i < grila.nrLinii; i++) {
+			for (int j = 0; j < grila.nrColoane; j++) {
+				if (grila.matrice[i][j].getTip() == Mina && grila.matrice[i][j].getStare() != Marcata) {
+					//||  (grila.matrice[i][j].getTip() == Normala && grila.matrice[i][j].getStare() != Deschisa) ??
+					return false;
+				}
+			}
+		}
+
+		if (ConsoleApplication) {
+			cout << "Felicitari! Ati castigat!" << endl;
+			cout << "Scorul dumneavoastra este: " << scor << endl;
+			cin.get();
+			getchar();
+		}
+		else {
+			// TODO - implement Joc::verificaJocCastigat
+			throw exception("Not yet implemented");
+		}
+		return true;
+	}
+	return false;
+}
+
+void Joc::salveaza_joc()
+{
+	ofstream file(FISIER);
+	if (file.is_open()) {
+		file << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER << nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << scor << endl;
+		for (int i = 0; i < grila.nrLinii; i++) {
+			for (int j = 0; j < grila.nrColoane; j++) {
+				if (grila.matrice[i][j].getStare() == Deschisa) {
+					file << grila.matrice[i][j].getNrVecini() << DELIMITER;
+				}
+				else if (grila.matrice[i][j].getStare() == Inchisa) {
+					if (grila.matrice[i][j].getTip() == Mina)
+						file << "X" << DELIMITER;
+					else
+						file << grila.matrice[i][j].getNrVecini() << "$" << DELIMITER;
+				}
+				else if (grila.matrice[i][j].getStare() == Marcata) {
+					if (grila.matrice[i][j].getTip() == Mina) {
+						file << "C" << DELIMITER;
+					}
+					else {
+						file << grila.matrice[i][j].getNrVecini()<<"G"<< DELIMITER;
+					}
+				}
+			}
+			file << endl;
+		}
+		file.close();
+	}
+	else {
+		if (ConsoleApplication) {
+			cout << "Eroare la deschiderea fisierului!" << endl;
+		}
+		else {
+			// TODO - implement Joc::salveaza_joc
+			throw exception("Not yet implemented");
+		}
+	}
+}
+
+bool Joc::incarca_joc() {
+	ifstream file(FISIER);
+	if (file.is_open()) {
+		int nrLinii, nrColoane, nrMine, nrMineMarcate, scor;
+		file >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> scor;
+
+		nivel.nrColoane = nrColoane;
+		nivel.nrLinii = nrLinii;
+		nivel.nrMine = nrMine;
+
+		grila.nrMineMarcate = nrMineMarcate;
+		grila.nrColoane = nrColoane;
+		grila.nrLinii = nrLinii;
+		grila.numar_mine = nrMine;
+
+		this->scor = scor;
+
+		grila.matrice.resize(nrLinii, vector<Celula>(nrColoane));
+		
+		for (int i = 0; i < grila.nrLinii; i++) {
+			for (int j = 0; j < grila.nrColoane; j++) {
+				string line;
+				getline(file, line, DELIMITER);
+
+				if (line.find('\n') != string::npos) {
+					line = line.replace(line.find('\n'), 1, "");
+				}
+				
+				if (!validareDateFisier(line)) {
+					if (ConsoleApplication) {
+						cout << "Datele din fisier sunt invalide!" << endl;
+						cin.get();
+						getchar();
+						return false;
+					}
+					else {
+						// TODO - implement Joc::incarca_joc
+						throw exception("Not yet implemented");
+					}
+				}
+
+				if (line == "X") {
+					grila.matrice[i][j].setTip(Mina);
+					grila.matrice[i][j].setStare(Inchisa);
+				}
+				else if (line == "C") {
+					grila.matrice[i][j].setTip(Mina);
+					grila.matrice[i][j].setStare(Marcata);
+				}
+				else if (line.length() != 1) {
+					if (line[1] == '$') {
+						grila.matrice[i][j].setNrVecini(line[0] - '0');
+						grila.matrice[i][j].setTip(Normala);
+						grila.matrice[i][j].setStare(Inchisa);
+					}
+					else if (line[1] == 'G') {
+						grila.matrice[i][j].setNrVecini(line[0] - '0');
+						grila.matrice[i][j].setTip(Normala);
+						grila.matrice[i][j].setStare(Marcata);
+					}
+				}
+				else {
+					grila.matrice[i][j].setNrVecini(line[0] - '0');
+					grila.matrice[i][j].setTip(Normala);
+					grila.matrice[i][j].setStare(Deschisa);
+				}
+			}
+		}
+		file.close();
+		return true;
+	}
+	else {
+		if (ConsoleApplication) {
+			cout << "Eroare la deschiderea fisierului!" << endl;
+			return false;
+		}
+		else {
+			return false;
+		}
+	}
+}
+
+bool Joc::validareDateFisier(string data) {
+
+	if (data.length() == 2) {
+		if (data[0] >= '0' && data[0] <= '8' && (data[1] != 'G' || data[1] != '$')) {
+			return true;
+		}
+		else {
+			cout << ";" << data << ";" << endl;
+			cout << "here1" << endl;
+			return false;
+		}
+	}
+	else if (data.length() == 1 && isdigit(data[0])) {
+		if (data[0] < '0' || data[0] > '9') {
+			cout << ";" << data << ";" << endl;
+			cout << "here2" << endl;
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	else if(data == "C" || data == "X") {
+		return true;
+	}
+	else {
+		cout << ";" << data << ";" << endl;
+		cout << "here3" << endl;
+		return false;
+	}
+	
 }

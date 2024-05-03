@@ -13,6 +13,7 @@ private:
 	int nrColoane;
 	int numar_mine;
 	vector<vector<Celula>> matrice;
+	int nrMineMarcate = 0;
 
 	//metode private
 	void plaseaza_mine();
@@ -25,6 +26,26 @@ public:
 	Grila& initializare(Nivel _nivel);
 
 	void deschide_celulele_vecine(int x, int y);
+
+	int getNrLinii() const {
+		return nrLinii;
+	}
+
+	int getNrColoane() const {
+		return nrColoane;
+	}
+
+	int getNumarMine() const {
+		return numar_mine;
+	}
+
+	int getNrMineMarcate() const {
+		return nrMineMarcate;
+	}
+
+	bool coordonateValide(int y,int x) const;
+
+	friend class Joc;
 
 	friend void afiseaza_grila(const Grila& grila);
 };

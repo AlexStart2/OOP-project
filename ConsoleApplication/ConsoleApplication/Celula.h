@@ -4,6 +4,8 @@
 #include "Tip.h"
 #include "Stare.h"
 
+const bool ConsoleApplication = true;
+
 class Celula {
 
 private:

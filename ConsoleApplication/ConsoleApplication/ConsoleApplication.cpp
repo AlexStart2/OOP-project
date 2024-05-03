@@ -1,11 +1,16 @@
 
 #include <iostream>
+#include <string>
+#include <cctype>
 #include "Joc.h"
 #include "Grila.h"
+
 
 using namespace std;
 
 void ruleaza_joc(Joc& minesweper);
+int introdu_coordonata();
+bool validInput(const string& _input);
 
 int main()
 {
@@ -19,6 +24,7 @@ int main()
     do {
         cout << "1. Incepe joc" << endl;
         cout << "2. Configureaza nuvelul de greutate" << endl;
+		cout << "3. Incarca joc" << endl;
         cout << "X. Exit" << endl;
 
         cout << "Alegeti optiune: ";
@@ -28,7 +34,7 @@ int main()
         {
         case '1':
 			system("cls");
-            afiseaza_grila(minesweper.incepe_joc(level));
+            minesweper.incepe_joc(level);
 			ruleaza_joc(minesweper);
             break;
         case '2':
@@ -105,7 +111,7 @@ int main()
 				}
 			}
 			system("cls");
-			afiseaza_grila(minesweper.incepe_joc(level));
+			minesweper.incepe_joc(level);
 			ruleaza_joc(minesweper);
 
             break;
@@ -113,6 +119,15 @@ int main()
         case 'X':
             cout << "End" << endl;
             break;
+		case '3':
+			if (!minesweper.incarca_joc()) {
+				cout << "Jocul nu a putut fi incarcat" << endl;
+				cin.get();
+				getchar();
+				break;
+			}
+			ruleaza_joc(minesweper);
+			break;
         default:
             cout << "Optiune gresita" << endl;
 			cin.get();
@@ -125,12 +140,13 @@ int main()
     return 0;
 }
 
-void ruleaza_joc(Joc& minesweper) {  //////////////////////// trebuie de facut update la grila dupa fiecare actiune
+void ruleaza_joc(Joc& minesweper) {
 
 	int x, y;
 	char opt;
 
 	do {
+		afiseaza_grila(minesweper.getGrila());
 		cout << "Alegeti actiunea: " << endl;
 		cout << "1. Deschide celula" << endl;
 		cout << "2. Marcheaza celula" << endl;
@@ -142,19 +158,49 @@ void ruleaza_joc(Joc& minesweper) {  //////////////////////// trebuie de facut u
 		switch (opt)
 		{
 		case '1':
-			cout << "Alegeti coordonatele celulei: ";
-			cin >> x >> y;
+			cout << "Alegeti coordonatele celulei" << endl;
+			cout << "Nr. coloana: ";
+			x = introdu_coordonata();
+			cout << "Nr. linie: ";
+			y = introdu_coordonata();
+
+			if (!minesweper.getGrila().coordonateValide(x, y)) {
+				cout << "Coordonate invalide!" << endl;
+				cin.get();
+				getchar();
+				break;
+			}
+
 			if (!minesweper.actiune_joc(x, y, true)) {
-				minesweper.termina_joc();
+				minesweper.joc_pierdut(x, y);
 			}
 			else {
-				minesweper.verificaJocCastigat();
+				if (minesweper.verificaJocCastigat()) {
+					return;
+				}
 			}
 			break;
 		case '2':
-			cout << "Alegeti coordonatele celulei: ";
-			cin >> x >> y;
+			cout << "Alegeti coordonatele celulei"<< endl;
+			cout << "Nr. coloana: ";
+			x = introdu_coordonata();
+			cout << "Nr. linie: ";
+			y = introdu_coordonata();
+
+			if (!minesweper.getGrila().coordonateValide(x, y)) {
+				cout << "Coordonate invalide!" << endl;
+				cin.get();
+				getchar();
+				break;
+			}
 			minesweper.actiune_joc(x, y, false);
+			break;
+
+		case '3':
+			minesweper.salveaza_joc();
+			cout << "Jocul a fost salvat" << endl;
+			cin.get();
+			getchar();
 			break;
 		case 'X':
 			cout << "End" << endl;
@@ -169,16 +215,49 @@ void ruleaza_joc(Joc& minesweper) {  //////////////////////// trebuie de facut u
 			break;
 		}
 		system("cls");
-		afiseaza_grila(minesweper.getGrila());
 	} while (true);
 }
 
 
-void afiseaza_grila(const Grila& grila) {  // trebuie de terminat
-	for (int i = 0; i < grila.nrLinii; i++) {
-		for (int j = 0; j < grila.nrColoane; j++) {
-			cout << grila.matrice[i][j].getStare() << " ";
+void afiseaza_grila(const Grila& grila) {  // se poate de pus cu culori putin
+	for (int i = 0; i < grila.getNrLinii(); i++) {
+		for (int j = 0; j < grila.getNrColoane(); j++) {
+			if (grila.matrice[i][j].getStare() == Deschisa) {
+				cout << grila.matrice[i][j].getNrVecini() << " ";
+			}
+			else if (grila.matrice[i][j].getStare() == Marcata) {
+				cout << "M ";
+			}
+			else {
+				cout << "] ";
+			}
 		}
 		cout << endl;
 	}
+	cout << endl;
+	cout << "Numarul de mine ramase: " << grila.getNumarMine() - grila.getNrMineMarcate() << endl;
+}
+
+int introdu_coordonata() {
+	
+	char cstr[100] = "1";
+	cin >> cstr;
+
+	while (!validInput(cstr)) {
+		cout << "Coordonate invalide! Introduceti alt numar: ";
+		cin >> cstr;
+	}
+	int x = stoi(cstr);
+	return x;
+}
+
+
+bool validInput(const string& _input) {
+
+	for (int i = 0; i < _input.length(); i++) {
+		if (!isdigit(_input[i])) {
+			return false;
+		}
+	}
+	return true;
 }

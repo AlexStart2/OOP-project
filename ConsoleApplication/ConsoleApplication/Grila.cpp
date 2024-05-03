@@ -1,13 +1,27 @@
 #include "Grila.h"
+#include "Celula.h"
 #include "Nivel.h"
 #include <iostream>
 #include <vector>
 #include <random>
 #include <ctime>
 
+using namespace std;
 
 
 bool Grila::deschide_celula(const int x, const int y) {
+
+	if (matrice[x][y].getStare() == Marcata) {
+		if (ConsoleApplication) {
+			cout << "Celula marcata! Nu se poate deschide!" << endl;
+			getchar();
+		}
+		else {
+			// TODO - implement Grila::deschide_celula
+		}
+			
+		return true;
+	}
 
 	if (matrice[x][y].getTip() == Mina) {
 		return false; // jocul s-a terminat
@@ -21,33 +35,31 @@ bool Grila::deschide_celula(const int x, const int y) {
 }
 
 void Grila::deschide_celulele_vecine(int x, int y) {
-	
-	// to check if the code is okay
-	while (true) {
-		bool deschis = false;
-		for (int i = x - 1; i <= x + 1; ++i) {
-			for (int j = y - 1; j <= y + 1; ++j) {
-				if (i >= 0 && i < nrLinii && j >= 0 && j < nrColoane) {
-					if (matrice[i][j].getTip() == Mina) {
-						continue;
-					}
-					if (matrice[i][j].getStare() == Inchisa) {
-						matrice[i][j].setStare(Deschisa);
-						if (matrice[i][j].getTip() == Normala) {
-							deschis = true;
-						}
-					}
+	if (matrice[x][y].getNrVecini() != 0) {
+		return;
+	}
+
+	for (int i = x - 1; i <= x + 1; ++i) {
+		for (int j = y - 1; j <= y + 1; ++j) {
+			if (i >= 0 && i < nrLinii && j >= 0 && j < nrColoane) {
+				if (matrice[i][j].getStare() == Inchisa) {
+					matrice[i][j].setStare(Deschisa);
+					deschide_celulele_vecine(i, j);
 				}
 			}
-		}
-		if (!deschis) {
-			break;
 		}
 	}
 }
 
 void Grila::marcheaza_celula(const int x, const int y) {
-	matrice[x][y].setStare(Marcata);
+	if (matrice[x][y].getStare() == Marcata) {
+		matrice[x][y].setStare(Inchisa);
+		nrMineMarcate--;
+	}
+	else if (matrice[x][y].getStare() == Inchisa) {
+		matrice[x][y].setStare(Marcata);
+		nrMineMarcate++;
+	}
 }
 
 Grila& Grila::initializare(Nivel _nivel) {
@@ -96,4 +108,8 @@ void Grila::plaseaza_mine()
 			}
 		}
 	}
+}
+
+bool Grila::coordonateValide(int y, int x) const {
+	return x > 0 && x <= nrLinii && y > 0 && y <= nrColoane;
 }
