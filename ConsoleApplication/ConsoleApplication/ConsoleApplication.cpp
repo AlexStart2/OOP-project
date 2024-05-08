@@ -2,8 +2,10 @@
 #include <iostream>
 #include <string>
 #include <cctype>
+#include <chrono>
 #include "Joc.h"
 #include "Grila.h"
+
 
 
 using namespace std;
@@ -16,7 +18,7 @@ int main()
 {
     cout << "Start" << endl;
     Joc minesweper;
-
+	
     char option = '0';
 
     Nivel level = Incepator9;
@@ -38,7 +40,7 @@ int main()
 			ruleaza_joc(minesweper);
             break;
         case '2':
-			int opt;
+			char opt;
 
 			while (true) {
 				system("cls");
@@ -55,36 +57,37 @@ int main()
 				cout << "0. Custom" << endl;
 				cout << "Alegeti optiune: ";
 
-				cin >> opt;
+				cin.get();
+				opt = getchar();
 				switch (opt) {
-				case 1:
+				case '1':
 					level = Incepator9;
 					break;
-				case 2:
+				case '2':
 					level = Incepator16;
 					break;
-				case 3:
+				case '3':
 					level = Incepator30;
 					break;
-				case 4:
+				case '4':
 					level = Mediu9;
 					break;
-				case 5:
+				case '5':
 					level = Mediu16;
 					break;
-				case 6:
+				case '6':
 					level = Mediu30;
 					break;
-				case 7:
+				case '7':
 					level = Avansat9;
 					break;
-				case 8:
+				case '8':
 					level = Avansat16;
 					break;
-				case 9:
+				case '9':
 					level = Avansat30;
 					break;
-				case 0:
+				case '0':
 					cout << "Introduceti numarul de linii, coloane si mine: ";
 					cin >> level.nrLinii >> level.nrColoane >> level.nrMine;
 					if (!minesweper.nivelValid(level.nrLinii, level.nrColoane, level.nrMine)) {
@@ -105,7 +108,8 @@ int main()
 					system("cls");
 					break;
 				}
-				if (opt >= 1 && opt <= 9)
+
+				if (opt-'0' >= 1 && opt-'0' <= 9)
 				{
 					break;
 				}
@@ -126,6 +130,7 @@ int main()
 				getchar();
 				break;
 			}
+			system("cls");
 			ruleaza_joc(minesweper);
 			break;
         default:
@@ -145,7 +150,11 @@ void ruleaza_joc(Joc& minesweper) {
 	int x, y;
 	char opt;
 
+
+	minesweper.setStartTime(chrono::high_resolution_clock::now());
+
 	do {
+		cout << "Timpul: " << (float)chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - minesweper.getStartTime()).count()/1000 + minesweper.getTimp() << "\b secunde" << endl;
 		afiseaza_grila(minesweper.getGrila());
 		cout << "Alegeti actiunea: " << endl;
 		cout << "1. Deschide celula" << endl;
@@ -173,11 +182,16 @@ void ruleaza_joc(Joc& minesweper) {
 
 			if (!minesweper.actiune_joc(x, y, true)) {
 				minesweper.joc_pierdut(x, y);
-			}
-			else {
-				if (minesweper.verificaJocCastigat()) {
-					return;
+				cout << "Doriti sa salvati scorul? (D/N): ";
+				cin >> opt;
+				opt = toupper(opt);
+				if (opt == 'D') {
+					minesweper.salveaza_scor();
 				}
+				return;
+			}
+			else if(minesweper.verificaJocCastigat()){
+				return;
 			}
 			break;
 		case '2':
@@ -194,6 +208,9 @@ void ruleaza_joc(Joc& minesweper) {
 				break;
 			}
 			minesweper.actiune_joc(x, y, false);
+			if (minesweper.verificaJocCastigat()) {
+				return;
+			}
 			break;
 
 		case '3':
@@ -223,13 +240,13 @@ void afiseaza_grila(const Grila& grila) {  // se poate de pus cu culori putin
 	for (int i = 0; i < grila.getNrLinii(); i++) {
 		for (int j = 0; j < grila.getNrColoane(); j++) {
 			if (grila.matrice[i][j].getStare() == Deschisa) {
-				cout << grila.matrice[i][j].getNrVecini() << " ";
+				cout << grila.matrice[i][j].getNrVecini() << "  ";
 			}
 			else if (grila.matrice[i][j].getStare() == Marcata) {
-				cout << "M ";
+				cout << "M  ";
 			}
 			else {
-				cout << "] ";
+				cout << "[] ";
 			}
 		}
 		cout << endl;

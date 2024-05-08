@@ -43,6 +43,8 @@ public:
 		return nrMineMarcate;
 	}
 
+	int getNrMineMarcateGresit() const;
+
 	bool coordonateValide(int y,int x) const;
 
 	friend class Joc;

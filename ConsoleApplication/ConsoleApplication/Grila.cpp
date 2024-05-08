@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <ctime>
 
 using namespace std;
 
@@ -14,6 +13,7 @@ bool Grila::deschide_celula(const int x, const int y) {
 	if (matrice[x][y].getStare() == Marcata) {
 		if (ConsoleApplication) {
 			cout << "Celula marcata! Nu se poate deschide!" << endl;
+			cin.get();
 			getchar();
 		}
 		else {
@@ -60,6 +60,16 @@ void Grila::marcheaza_celula(const int x, const int y) {
 		matrice[x][y].setStare(Marcata);
 		nrMineMarcate++;
 	}
+	else if (matrice[x][y].getStare() == Deschisa) {
+		if (ConsoleApplication) {
+			cout << "Celula deschisa! Nu se poate marca!" << endl;
+			cin.get();
+			getchar();
+		}
+		else {
+			// TODO - implement Grila::marcheaza_celula
+		}
+	}
 }
 
 Grila& Grila::initializare(Nivel _nivel) {
@@ -78,7 +88,8 @@ void Grila::plaseaza_mine()
 {
 	srand(time(NULL));
 
-	// Plasarea aleatorie a minelor
+	// Plasarea aleatorie a minelor // TODO: sa le repartizeze uniform // jucatorul sa nu piarda la prima mutare
+
 	for (int i = 0; i < numar_mine; ++i) {
 		int linie, coloana;
 
@@ -112,4 +123,16 @@ void Grila::plaseaza_mine()
 
 bool Grila::coordonateValide(int y, int x) const {
 	return x > 0 && x <= nrLinii && y > 0 && y <= nrColoane;
+}
+
+int Grila::getNrMineMarcateGresit() const {
+	int nrMineGresit = 0;
+	for (int i = 0; i < nrLinii; ++i) {
+		for (int j = 0; j < nrColoane; ++j) {
+			if (matrice[i][j].getStare() == Marcata && matrice[i][j].getTip() == Normala) {
+				nrMineGresit++;
+			}
+		}
+	}
+	return nrMineGresit;
 }

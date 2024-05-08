@@ -4,11 +4,14 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <chrono>
+#include <ctime>
 
 
 Joc::Joc() {
 	nivel = Mediu16;
 	scor = 0;
+	timp = 0;
 }
 
 Grila& Joc::incepe_joc(Nivel nivel) {
@@ -21,6 +24,8 @@ Grila& Joc::incepe_joc(Nivel nivel) {
 void Joc::joc_pierdut(int y, int x) {
 	x--;
 	y--;
+
+	CalculScor();
 	if (ConsoleApplication) {
 		cout << "Joc pierdut! Celula (" << ++y << ", " << ++x << ") continea o mina!" << endl;
 		for (int i = 0; i < grila.nrLinii; i++) {
@@ -75,7 +80,6 @@ bool Joc::actiune_joc(int y, int x, bool deschideORmarcheaza) {
 	else {
 		grila.marcheaza_celula(x, y);
 	}
-	return true;	// continue jocul
 }
 
 bool Joc::nivelValid(const int x, const int y, const int nrMine) const {
@@ -95,6 +99,7 @@ bool Joc::verificaJocCastigat() {
 
 	if (grila.nrMineMarcate == grila.numar_mine) {
 
+
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
 				if (grila.matrice[i][j].getTip() == Mina && grila.matrice[i][j].getStare() != Marcata) {
@@ -103,6 +108,9 @@ bool Joc::verificaJocCastigat() {
 				}
 			}
 		}
+
+		CalculScor();
+		salveaza_scor();
 
 		if (ConsoleApplication) {
 			cout << "Felicitari! Ati castigat!" << endl;
@@ -123,7 +131,11 @@ void Joc::salveaza_joc()
 {
 	ofstream file(FISIER);
 	if (file.is_open()) {
-		file << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER << nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << scor << endl;
+		auto end = chrono::high_resolution_clock::now();
+		float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000 + timp;
+
+		file << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER << nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << t << endl;
+
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
 				if (grila.matrice[i][j].getStare() == Deschisa) {
@@ -162,8 +174,9 @@ void Joc::salveaza_joc()
 bool Joc::incarca_joc() {
 	ifstream file(FISIER);
 	if (file.is_open()) {
-		int nrLinii, nrColoane, nrMine, nrMineMarcate, scor;
-		file >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> scor;
+		int nrLinii, nrColoane, nrMine, nrMineMarcate;
+		float timp;
+		file >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> timp;
 
 		nivel.nrColoane = nrColoane;
 		nivel.nrLinii = nrLinii;
@@ -174,7 +187,7 @@ bool Joc::incarca_joc() {
 		grila.nrLinii = nrLinii;
 		grila.numar_mine = nrMine;
 
-		this->scor = scor;
+		this->timp = timp;
 
 		grila.matrice.resize(nrLinii, vector<Celula>(nrColoane));
 		
@@ -248,15 +261,13 @@ bool Joc::validareDateFisier(string data) {
 			return true;
 		}
 		else {
-			cout << ";" << data << ";" << endl;
-			cout << "here1" << endl;
+			//exceptie
 			return false;
 		}
 	}
 	else if (data.length() == 1 && isdigit(data[0])) {
 		if (data[0] < '0' || data[0] > '9') {
-			cout << ";" << data << ";" << endl;
-			cout << "here2" << endl;
+			//exceptie
 			return false;
 		}
 		else {
@@ -267,9 +278,74 @@ bool Joc::validareDateFisier(string data) {
 		return true;
 	}
 	else {
-		cout << ";" << data << ";" << endl;
-		cout << "here3" << endl;
+		//exceptie
 		return false;
 	}
 	
+}
+
+
+float Joc::CalculScor() {
+	auto end = chrono::high_resolution_clock::now();
+	float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() + timp;
+	timp = t;
+	scor = grila.nrMineMarcate / t * 100000;
+	return scor;
+}
+
+void Joc::salveaza_scor() {
+
+	
+	ofstream file(FISIER_SCOR, ios::app);
+	if (file.is_open()) {
+
+		file << getCurrentDate() << DELIMITER << nivel.nume 
+			<< DELIMITER << grila.nrLinii << "x" << grila.nrColoane << DELIMITER
+			<< timp  << DELIMITER << grila.numar_mine << DELIMITER << grila.getNrMineMarcateGresit() 
+			<< DELIMITER << scor << endl;
+
+		file.close();
+	}
+	else {
+		if (ConsoleApplication) {
+			cout << "Eroare la deschiderea fisierului!" << endl;
+		}
+		else {
+			// TODO - implement Joc::salveaza_scor
+			throw exception("Not yet implemented");
+		}
+	}
+}
+
+string Joc::getCurrentDate() {
+
+	time_t now = time(0);
+	tm ltm;
+	localtime_s(&ltm, &now);
+
+	string date = to_string(1900 + ltm.tm_year) + "-" + to_string(1 + ltm.tm_mon) 
+		+ "-" + to_string(ltm.tm_mday);
+	return date;
+}
+
+string Joc::getScoruri() {
+	ifstream file(FISIER_SCOR);
+	string line;
+	string scoruri = "";
+	if (file.is_open()) {
+		while (getline(file, line)) {
+			scoruri += line + "\n";
+		}
+		file.close();
+	}
+	else {
+		if (ConsoleApplication) {
+			cout << "Eroare la deschiderea fisierului!" << endl;
+		}
+		else {
+			// TODO - implement Joc::getScoruri
+			throw exception("Not yet implemented");
+		}
+	}
+	return scoruri;
 }
