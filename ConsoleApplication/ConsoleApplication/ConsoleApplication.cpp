@@ -3,6 +3,7 @@
 #include <string>
 #include <cctype>
 #include <chrono>
+#include <conio.h>
 #include "Joc.h"
 #include "Grila.h"
 
@@ -21,23 +22,26 @@ int main()
 	
     char option = '0';
 
-    Nivel level = Incepator9;
+    Nivel level;
 
     do {
         cout << "1. Incepe joc" << endl;
-        cout << "2. Configureaza nuvelul de greutate" << endl;
+        cout << "2. Configureaza nivelul de greutate" << endl;
 		cout << "3. Incarca joc" << endl;
+		cout << "4. Vizualizaeaza scoruri" << endl;
         cout << "X. Exit" << endl;
 
         cout << "Alegeti optiune: ";
-        cin >> option;
+		option = _getch();
         option = toupper(option);
         switch (option)
         {
         case '1':
 			system("cls");
+			level = Incepator9;
             minesweper.incepe_joc(level);
 			ruleaza_joc(minesweper);
+			minesweper.endGame();
             break;
         case '2':
 			char opt;
@@ -57,8 +61,7 @@ int main()
 				cout << "0. Custom" << endl;
 				cout << "Alegeti optiune: ";
 
-				cin.get();
-				opt = getchar();
+				opt = _getch();
 				switch (opt) {
 				case '1':
 					level = Incepator9;
@@ -88,28 +91,34 @@ int main()
 					level = Avansat30;
 					break;
 				case '0':
-					cout << "Introduceti numarul de linii, coloane si mine: ";
-					cin >> level.nrLinii >> level.nrColoane >> level.nrMine;
-					if (!minesweper.nivelValid(level.nrLinii, level.nrColoane, level.nrMine)) {
-						cout << "Nivelul introdus nu este valid" << endl;
-						cin.get();
-						getchar();
-						system("cls");
+					do {
+						cout << endl << "Nr. maxim de linii: " << minesweper.NR_MAXIM_LINII << endl;
+						cout << "Nr. minim de linii: " << minesweper.NR_MINIM_LINII << endl;
+						cout << "Nr. maxim de coloane: " << minesweper.NR_MAXIM_COLOANE << endl;
+						cout << "Nr. minim de coloane: " << minesweper.NR_MINIM_COLOANE << endl;
+
+						cout << "Nr. maxim de mine: " << minesweper.NIVEL_MAX << "% din toata grila" << endl;
+						cout << "Nr. minim de mine: " << minesweper.NR_MINIM_MINE << endl;
+						cout << "Introduceti numarul de linii, coloane si mine: ";
+						cin >> level.nrColoane >> level.nrLinii >> level.nrMine;
+						if (!minesweper.nivelValid(level.nrLinii, level.nrColoane, level.nrMine)) {
+							cout << "Nivelul introdus nu este valid" << endl;
+							_getch();
+							system("cls");
+							continue;
+						}
 						break;
-					}
-					system("cls");
-					afiseaza_grila(minesweper.incepe_joc(level));
-					ruleaza_joc(minesweper);
+					} while (true);
+					
 					break;
 				default:
 					cout << "Optiune gresita" << endl;
-					cin.get();
-					getchar();
+					_getch();
 					system("cls");
 					break;
 				}
 
-				if (opt-'0' >= 1 && opt-'0' <= 9)
+				if (opt-'0' >= 0 && opt-'0' <= 9)
 				{
 					break;
 				}
@@ -117,7 +126,7 @@ int main()
 			system("cls");
 			minesweper.incepe_joc(level);
 			ruleaza_joc(minesweper);
-
+			minesweper.endGame();
             break;
 
         case 'X':
@@ -126,17 +135,23 @@ int main()
 		case '3':
 			if (!minesweper.incarca_joc()) {
 				cout << "Jocul nu a putut fi incarcat" << endl;
-				cin.get();
-				getchar();
+				_getch();
 				break;
 			}
 			system("cls");
 			ruleaza_joc(minesweper);
+			minesweper.endGame();
+			break;
+		case '4':
+			system("cls");
+			cout << "Scoruri:" << endl;
+			cout << minesweper.getScoruri();
+			_getch();
+			system("cls");
 			break;
         default:
             cout << "Optiune gresita" << endl;
-			cin.get();
-			getchar();
+			_getch();
             break;
         }
 
@@ -162,7 +177,7 @@ void ruleaza_joc(Joc& minesweper) {
 		cout << "3. Salveaza joc" << endl;
 		cout << "X. Exit" << endl;
 		cout << "Alegeti optiune: ";
-		cin >> opt;
+		opt = _getch();
 		opt = toupper(opt);
 		switch (opt)
 		{
@@ -175,8 +190,7 @@ void ruleaza_joc(Joc& minesweper) {
 
 			if (!minesweper.getGrila().coordonateValide(x, y)) {
 				cout << "Coordonate invalide!" << endl;
-				cin.get();
-				getchar();
+				_getch();
 				break;
 			}
 
@@ -203,8 +217,7 @@ void ruleaza_joc(Joc& minesweper) {
 
 			if (!minesweper.getGrila().coordonateValide(x, y)) {
 				cout << "Coordonate invalide!" << endl;
-				cin.get();
-				getchar();
+				_getch();
 				break;
 			}
 			minesweper.actiune_joc(x, y, false);
@@ -216,19 +229,16 @@ void ruleaza_joc(Joc& minesweper) {
 		case '3':
 			minesweper.salveaza_joc();
 			cout << "Jocul a fost salvat" << endl;
-			cin.get();
-			getchar();
+			_getch();
 			break;
 		case 'X':
 			cout << "End" << endl;
-			cin.get();
-			getchar();
+			_getch();
 			system("cls");
 			return;
 		default:
 			cout << "Optiune gresita" << endl;
-			cin.get();
-			getchar();
+			_getch();
 			break;
 		}
 		system("cls");
@@ -236,17 +246,17 @@ void ruleaza_joc(Joc& minesweper) {
 }
 
 
-void afiseaza_grila(const Grila& grila) {  // se poate de pus cu culori putin
+void afiseaza_grila(const Grila& grila) {
 	for (int i = 0; i < grila.getNrLinii(); i++) {
 		for (int j = 0; j < grila.getNrColoane(); j++) {
 			if (grila.matrice[i][j].getStare() == Deschisa) {
-				cout << grila.matrice[i][j].getNrVecini() << "  ";
+				cout << grila.matrice[i][j].getNrVecini() << " ";
 			}
 			else if (grila.matrice[i][j].getStare() == Marcata) {
-				cout << "M  ";
+				cout << "M ";
 			}
 			else {
-				cout << "[] ";
+				cout << "] ";
 			}
 		}
 		cout << endl;

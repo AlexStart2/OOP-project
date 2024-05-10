@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <conio.h>
 
 using namespace std;
 
@@ -13,8 +14,7 @@ bool Grila::deschide_celula(const int x, const int y) {
 	if (matrice[x][y].getStare() == Marcata) {
 		if (ConsoleApplication) {
 			cout << "Celula marcata! Nu se poate deschide!" << endl;
-			cin.get();
-			getchar();
+			_getch();
 		}
 		else {
 			// TODO - implement Grila::deschide_celula
@@ -63,8 +63,7 @@ void Grila::marcheaza_celula(const int x, const int y) {
 	else if (matrice[x][y].getStare() == Deschisa) {
 		if (ConsoleApplication) {
 			cout << "Celula deschisa! Nu se poate marca!" << endl;
-			cin.get();
-			getchar();
+			_getch();
 		}
 		else {
 			// TODO - implement Grila::marcheaza_celula
@@ -76,6 +75,9 @@ Grila& Grila::initializare(Nivel _nivel) {
 	numar_mine = _nivel.nrMine;
 	nrColoane = _nivel.nrColoane;
 	nrLinii = _nivel.nrLinii;
+	nrMineMarcate = 0;
+
+	matrice.clear();
 
 	matrice.resize(nrLinii, vector<Celula>(nrColoane));
 
@@ -88,19 +90,112 @@ void Grila::plaseaza_mine()
 {
 	srand(time(NULL));
 
-	// Plasarea aleatorie a minelor // TODO: sa le repartizeze uniform // jucatorul sa nu piarda la prima mutare
-
-	for (int i = 0; i < numar_mine; ++i) {
-		int linie, coloana;
-
-		do {
-			linie = rand() % nrLinii;
-			coloana = rand() % nrColoane;
-		} while (matrice[linie][coloana].getTip() == Mina);
-
-		matrice[linie][coloana].setTip(Mina);
+	int dimZonaX = 0;
+	int dimZonaY = 0;
+	int nrX = 4;
+	while (dimZonaX == 0) {
+		int x = nrColoane / nrX;
+		if (x < 4) {
+			nrX--;
+			continue;
+		}
+		dimZonaX = x;
 	}
 
+	int nrY = 4;
+	while (dimZonaY == 0) {
+		int y = nrLinii / nrY;
+		if (y < 4) {
+			nrY--;
+			continue;
+		}
+		dimZonaY = y;
+	}
+
+	int restX = nrColoane % dimZonaX;
+	int restY = nrLinii % dimZonaY;
+	int addXcurrent = 0;
+	int addYcurrent = 0;
+	int addXprecedent = 0;
+	int addYprecedent = 0;
+
+	if (restX != 0) {
+		addXcurrent = 1;
+		restX--;
+	}
+	if (restY != 0) {
+		addYcurrent = 1;
+		restY--;
+	}
+
+	int nrMine = numar_mine;
+
+	while (nrMine > 0) {
+		for (int nrXi = 0; nrXi < nrX; ++nrXi) {
+			for (int nrYi = 0; nrYi < nrY; ++nrYi) {
+
+				int nrZonaX = nrXi * dimZonaX ;
+				int nrZonaY = nrYi * dimZonaY ;
+
+				int limSupX = nrZonaX + dimZonaX - 1 + addXcurrent + addXprecedent;
+				int limSupY = nrZonaY + dimZonaY - 1 + addYcurrent + addYprecedent;
+
+				int limInfX = nrZonaX + addXprecedent;
+				int limInfY = nrZonaY + addYprecedent;
+
+				int x;
+				int y;
+				do { // x si y sunt inversate pentru ca x reprezinta linia si y reprezinta coloana
+					y = rand() % (limSupX - limInfX + 1) + limInfX;
+					x = rand() % (limSupY - limInfY + 1) + limInfY;
+				} while (matrice[x][y].getTip() == Mina);
+				
+
+				matrice[x][y].setTip(Mina);
+				addYprecedent += addYcurrent;
+
+				nrMine--;
+
+				if (nrMine == 0) {
+					break;
+				}
+
+				
+				if (restY != 0) {
+					addYcurrent = 1;
+					restY--;
+				}
+				else {
+					addYcurrent = 0;
+				}
+			}
+			if (nrMine == 0) {
+				break;
+			}
+			addXprecedent += addXcurrent;
+			if (restX != 0) {
+				addXcurrent = 1;
+				restX--;
+			}
+			else {
+				addXcurrent = 0;
+			}
+			
+			addYprecedent = 0;
+			restY = nrLinii % dimZonaY;
+			if (restY != 0) {
+				addYcurrent = 1;
+				restY--;
+			}
+		}
+		addXprecedent = 0;
+		restX = nrColoane % dimZonaX;
+		if (restX != 0) {
+			addXcurrent = 1;
+			restX--;
+		}
+	}
+	
 	// Calcularea numarului de mine vecine pentru fiecare celula
 	for (int i = 0; i < nrLinii; ++i) {
 		for (int j = 0; j < nrColoane; ++j) {

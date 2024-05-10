@@ -6,6 +6,7 @@
 #include <fstream>
 #include <chrono>
 #include <ctime>
+#include <conio.h>
 
 
 Joc::Joc() {
@@ -27,7 +28,7 @@ void Joc::joc_pierdut(int y, int x) {
 
 	CalculScor();
 	if (ConsoleApplication) {
-		cout << "Joc pierdut! Celula (" << ++y << ", " << ++x << ") continea o mina!" << endl;
+		cout << "Joc pierdut! Celula (" << y+1 << ", " << x+1 << ") continea o mina!" << endl;
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
 				if (x == i && y == j) {
@@ -60,8 +61,10 @@ void Joc::joc_pierdut(int y, int x) {
 		}
 
 		cout << "Scorul dumneavoastra este: " << scor << endl;
-		cin.get();
-		getchar();
+		_getch();
+		system("cls");
+		cout << "Scoruri:" << endl;
+		cout << getScoruri();
 	}
 	else {
 		// TODO - implement Joc::joc_pierdut
@@ -115,8 +118,11 @@ bool Joc::verificaJocCastigat() {
 		if (ConsoleApplication) {
 			cout << "Felicitari! Ati castigat!" << endl;
 			cout << "Scorul dumneavoastra este: " << scor << endl;
-			cin.get();
-			getchar();
+			_getch();
+
+			system("cls");
+			cout << "Scoruri:" << endl;
+			cout << getScoruri();
 		}
 		else {
 			// TODO - implement Joc::verificaJocCastigat
@@ -131,10 +137,27 @@ void Joc::salveaza_joc()
 {
 	ofstream file(FISIER);
 	if (file.is_open()) {
-		auto end = chrono::high_resolution_clock::now();
-		float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000 + timp;
 
-		file << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER << nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << t << endl;
+		ofstream fileConfig(FISIER_CONFIG);
+		if (fileConfig.is_open()) {
+			auto end = chrono::high_resolution_clock::now();
+			float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000 + timp;
+
+			fileConfig << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER
+				<< nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << t << endl;
+			
+			fileConfig.close();
+		}
+		else {
+			if (ConsoleApplication) {
+				cout << "Eroare la deschiderea fisierului!" << endl;
+			}
+			else {
+				// TODO - implement Joc::salveaza_joc
+				throw exception("Not yet implemented");
+			}
+		}
+
 
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
@@ -176,18 +199,35 @@ bool Joc::incarca_joc() {
 	if (file.is_open()) {
 		int nrLinii, nrColoane, nrMine, nrMineMarcate;
 		float timp;
-		file >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> timp;
+		ifstream fileConfig(FISIER_CONFIG);
+		if (fileConfig.is_open()) {
+			fileConfig >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> timp;
 
-		nivel.nrColoane = nrColoane;
-		nivel.nrLinii = nrLinii;
-		nivel.nrMine = nrMine;
+			nivel.nrColoane = nrColoane;
+			nivel.nrLinii = nrLinii;
+			nivel.nrMine = nrMine;
 
-		grila.nrMineMarcate = nrMineMarcate;
-		grila.nrColoane = nrColoane;
-		grila.nrLinii = nrLinii;
-		grila.numar_mine = nrMine;
+			grila.nrMineMarcate = nrMineMarcate;
+			grila.nrColoane = nrColoane;
+			grila.nrLinii = nrLinii;
+			grila.numar_mine = nrMine;
+			fileConfig.close();
+		}
+		else {
+			if (ConsoleApplication) {
+				cout << "Eroare la deschiderea fisierului!" << endl;
+				_getch();
+				return false;
+			}
+			else {
+				// TODO - implement Joc::incarca_joc
+				throw exception("Not yet implemented");
+			}
+		}
 
 		this->timp = timp;
+
+		grila.matrice.clear();
 
 		grila.matrice.resize(nrLinii, vector<Celula>(nrColoane));
 		
@@ -203,8 +243,7 @@ bool Joc::incarca_joc() {
 				if (!validareDateFisier(line)) {
 					if (ConsoleApplication) {
 						cout << "Datele din fisier sunt invalide!" << endl;
-						cin.get();
-						getchar();
+						_getch();
 						return false;
 					}
 					else {
@@ -288,7 +327,7 @@ bool Joc::validareDateFisier(string data) {
 float Joc::CalculScor() {
 	auto end = chrono::high_resolution_clock::now();
 	float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() + timp;
-	timp = t;
+	timp = t / 1000;
 	scor = grila.nrMineMarcate / t * 100000;
 	return scor;
 }
@@ -348,4 +387,11 @@ string Joc::getScoruri() {
 		}
 	}
 	return scoruri;
+}
+
+
+void Joc::endGame() {
+	timp = 0;
+	scor = 0;
+	grila.matrice.clear();
 }
