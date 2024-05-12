@@ -44,5 +44,8 @@
     <ClInclude Include="Joc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Nivel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

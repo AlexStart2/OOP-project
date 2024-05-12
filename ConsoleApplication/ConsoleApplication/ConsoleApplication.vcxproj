@@ -137,6 +137,7 @@
     <ClInclude Include="Celula.h" />
     <ClInclude Include="Grila.h" />
     <ClInclude Include="Joc.h" />
+    <ClInclude Include="Nivel.h" />
     <ClInclude Include="Stare.h" />
     <ClInclude Include="Tip.h" />
   </ItemGroup>

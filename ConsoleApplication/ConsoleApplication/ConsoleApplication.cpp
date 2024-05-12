@@ -15,6 +15,7 @@ void ruleaza_joc(Joc& minesweper);
 int introdu_coordonata();
 bool validInput(const string& _input);
 
+
 int main()
 {
     cout << "Start" << endl;

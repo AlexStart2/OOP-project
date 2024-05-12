@@ -9,10 +9,11 @@
 class Joc {
 
 private:
-	const char* FISIER = "joc.txt";
-	const char* FISIER_SCOR = "scores.txt";
-	const char* FISIER_CONFIG = "config.txt";
-	const char DELIMITER = ' ';
+	inline static const char* FISIER = "joc.txt";
+	inline static const char* FISIER_SCOR = "scores.txt";
+	inline static const char* FISIER_CONFIG = "config.txt";
+
+	static const char DELIMITER = ' ';
 
 	Nivel nivel;
 	float scor;
@@ -66,7 +67,7 @@ public:
 
 	string getCurrentDate();
 
-	string getScoruri();
+	static string getScoruri();
 
 	void endGame();
 };
