@@ -1,8 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
-#include <ConsoleApplication/Joc.h>
-#include <ConsoleApplication/Nivel.h>
+#include "Joc.h"
+#include "Nivel.h"
+#include <vector>
+#include "Grila.h"
+#include <string>
 
 using namespace sf;
 
@@ -27,7 +30,9 @@ const int FONT_SIZE = 28;
 const int menuPosX = 50;
 const int menuPosY = 50;
 const int SPACE = 10;
-
+const int cellSize = 20;
+const int marginTop = 50;
+const int cellsMargin = 5;
 
 bool mainMenu = true;
 bool chooseLevel = false;
@@ -38,8 +43,7 @@ struct Button {
 	Font font;
 };
 
-Button createButton(const std::string& text, float x, float y, float xText = xButtonText,
-	float yText = yButtonText, float width = WIDTH, float height = HEIGHT);
+Button createButton(const std::string& text, int x, int y, float width = WIDTH, float height = HEIGHT);
 void buttonHover(Button& button, RenderWindow& window ,bool hover);
 void buttonClick(Button& button);
 bool isCursorOverShape(const RectangleShape& shape, const RenderWindow& window);
@@ -48,11 +52,13 @@ void EventMenu(RenderWindow& window, Event& event, Button& newGameButton,
 void drawMenu(RenderWindow& window, Button& newGameButton,
 	Button& loadGameButton, Button& exitButton);
 void drawLevelMenu(RenderWindow& window, std::vector<Button>& levelButtons);
+void startGame(RenderWindow& window, Grila& minesweper);
 
 int main()
-{
+{ 
     RenderWindow window(VideoMode(windowWidth, windowHeight), "Minesweper");
-	Joc minesweper();
+	window.setFramerateLimit(60);
+	Joc minesweper;
 
 	int i = 0;
 	Button newGameButton = createButton("Joc nou", menuPosX, (menuPosY + SPACE) * ++i);
@@ -90,8 +96,19 @@ int main()
 						if (Mouse::isButtonPressed(Mouse::Left)) {
 							buttonClick(button);
 							if (DEBUG) {
-								std::cout << "Level button clicked!" << std::endl;
+								std::cout << button.text.getString().toAnsiString() << " button clicked!" << std::endl;
 							}
+
+							std::string levelName = button.text.getString().toAnsiString();
+							Nivel level = Incepator16;
+							for (const auto& l : levels) {
+								if (l.nume == levelName) {
+									level = l;
+									break;
+								}
+							}
+
+							startGame(window, minesweper.incepe_joc(level));
 						}
 					}
 					else {
@@ -117,14 +134,19 @@ int main()
     return 0;
 }
 
-Button createButton(const std::string& text, float x, float y, float xText,
-	float yText, float width, float height)
+Button createButton(const std::string& text, int x, int y, float width, float height)
 {
 	Button button;
 
 	button.button.setSize(Vector2f(width, height));
 	button.button.setPosition(x, y);
 	button.button.setFillColor(buttonColor);
+	button.button.setOutlineThickness(BUTTON_BORDER_THICKNESS);
+	button.button.setOutlineColor(buttonBorderColor);
+
+	if (text.empty()) {
+		return button;
+	}
 
 	if (!button.font.loadFromFile(fontPath)) {
 		std::cerr << "Error loading font file!" << std::endl;
@@ -134,11 +156,10 @@ Button createButton(const std::string& text, float x, float y, float xText,
 	button.text.setString(text);
 	button.text.setCharacterSize(FONT_SIZE);
 	button.text.setFillColor(buttonTextColor);
-	button.text.setPosition(x + xText, y + yText);
 
-	button.button.setOutlineThickness(BUTTON_BORDER_THICKNESS);
-	button.button.setOutlineColor(buttonBorderColor);
-
+	FloatRect textRect = button.text.getLocalBounds();
+	button.text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
+	button.text.setPosition(x + width / 2.0f, y + height / 2.0f);
 	return button;
 }
 
@@ -258,5 +279,51 @@ void drawLevelMenu(RenderWindow& window, std::vector<Button>& levelButtons)
 		button.text.setFont(button.font);
 		window.draw(button.button);
 		window.draw(button.text);
+	}
+}
+
+void startGame(RenderWindow& window, Grila& grila)
+{
+	std::vector<Button> cells;
+	
+	for (int i = 0; i < grila.getNrLinii(); i++) {
+		for (int j = 0; j < grila.getNrColoane(); j++) {
+			string text = std::to_string(grila.matrice[i][j].getNrVecini());
+			Button button = createButton(text, j * cellSize + j * cellsMargin , i * cellSize + 
+				i * cellsMargin, cellSize, cellSize);
+			cells.push_back(button);
+		}
+	}
+
+
+	Cursor arrowCursor;
+	arrowCursor.loadFromSystem(Cursor::Arrow);
+	window.setMouseCursor(arrowCursor);
+
+	while (window.isOpen())
+	{
+		int k = 0;
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+				window.close();
+
+			if (event.type == Event::Resized) {
+				window.setView(View(FloatRect(0, 0, event.size.width, event.size.height)));
+			}
+		}
+		window.clear(Color::White);
+
+		window.setSize(Vector2u(grila.getNrColoane() * cellSize*1.25, grila.getNrLinii() * cellSize*1.25));
+
+		for (Button button : cells) {
+			window.draw(button.button);
+			//button.font.loadFromFile(fontPath);
+			//button.text.setFont(button.font);
+			//window.draw(button.text);
+		}
+		
+		window.display();
 	}
 }

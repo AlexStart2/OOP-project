@@ -9,6 +9,10 @@
 #include <conio.h>
 
 
+const char Joc::FISIER[20] = "joc.txt";
+const char Joc::FISIER_SCOR[20] = "scores.txt";
+const char Joc::FISIER_CONFIG[20] = "config.txt";
+
 Joc::Joc() {
 	nivel = Mediu16;
 	scor = 0;
@@ -334,7 +338,6 @@ float Joc::CalculScor() {
 
 void Joc::salveaza_scor() {
 
-	
 	ofstream file(FISIER_SCOR, ios::app);
 	if (file.is_open()) {
 

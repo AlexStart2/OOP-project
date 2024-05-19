@@ -3,6 +3,7 @@
 #include "Celula.h"
 #include <vector>
 #include "Nivel.h"
+#include <SFML/Graphics.hpp>
 
 using namespace std;
 
@@ -50,6 +51,7 @@ public:
 	friend class Joc;
 
 	friend void afiseaza_grila(const Grila& grila);
+	friend void startGame(sf::RenderWindow& window, Grila& grila);
 };
 
 #endif

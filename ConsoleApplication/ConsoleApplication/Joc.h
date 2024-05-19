@@ -9,9 +9,7 @@
 class Joc {
 
 private:
-	inline static const char* FISIER = "joc.txt";
-	inline static const char* FISIER_SCOR = "scores.txt";
-	inline static const char* FISIER_CONFIG = "config.txt";
+	
 
 	static const char DELIMITER = ' ';
 
@@ -21,6 +19,9 @@ private:
 	chrono::time_point<std::chrono::steady_clock> start;
 	float timp;
 public:
+	static const char FISIER[20];
+	static const char FISIER_SCOR[20];
+	static const char FISIER_CONFIG[20];
 	const float NIVEL_MAX = 34.79f; // 34.79% din celule sunt mine
 	const int NR_MINIM_LINII = 9;
 	const int NR_MINIM_COLOANE = 9;
