@@ -8,6 +8,15 @@
 
 using namespace std;
 
+Celula Grila::getCell(const int i, const int j) {
+	if (i < 0 || i >= nrLinii || j < 0 || j >= nrColoane) {
+		throw exception("Coordonate invalide!");
+	}
+	else {
+		return matrice[i][j];
+	}
+}
+
 
 bool Grila::deschide_celula(const int x, const int y) {
 

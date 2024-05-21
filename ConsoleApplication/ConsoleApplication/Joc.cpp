@@ -27,8 +27,11 @@ Grila& Joc::incepe_joc(Nivel nivel) {
 }
 
 void Joc::joc_pierdut(int y, int x) {
-	x--;
-	y--;
+	if (ConsoleApplication) {
+		x--;
+		y--;
+	}
+
 
 	CalculScor();
 	if (ConsoleApplication) {
@@ -70,17 +73,11 @@ void Joc::joc_pierdut(int y, int x) {
 		cout << "Scoruri:" << endl;
 		cout << getScoruri();
 	}
-	else {
-		// TODO - implement Joc::joc_pierdut
-		throw exception("Not yet implemented");
-	}
 }
 
 
 
 bool Joc::actiune_joc(int y, int x, bool deschideORmarcheaza) {
-	x--;
-	y--;
 	if (deschideORmarcheaza) {
 		return grila.deschide_celula(x, y);
 	}
@@ -110,7 +107,6 @@ bool Joc::verificaJocCastigat() {
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
 				if (grila.matrice[i][j].getTip() == Mina && grila.matrice[i][j].getStare() != Marcata) {
-					//||  (grila.matrice[i][j].getTip() == Normala && grila.matrice[i][j].getStare() != Deschisa) ??
 					return false;
 				}
 			}
@@ -127,10 +123,6 @@ bool Joc::verificaJocCastigat() {
 			system("cls");
 			cout << "Scoruri:" << endl;
 			cout << getScoruri();
-		}
-		else {
-			// TODO - implement Joc::verificaJocCastigat
-			throw exception("Not yet implemented");
 		}
 		return true;
 	}

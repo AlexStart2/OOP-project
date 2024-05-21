@@ -44,6 +44,8 @@ public:
 		return nrMineMarcate;
 	}
 
+	Celula getCell(const int i, const int j);
+
 	int getNrMineMarcateGresit() const;
 
 	bool coordonateValide(int y,int x) const;

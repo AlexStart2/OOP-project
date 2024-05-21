@@ -170,7 +170,9 @@ void ruleaza_joc(Joc& minesweper) {
 	minesweper.setStartTime(chrono::high_resolution_clock::now());
 
 	do {
-		cout << "Timpul: " << (float)chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - minesweper.getStartTime()).count()/1000 + minesweper.getTimp() << "\b secunde" << endl;
+		cout << "Timpul: " << (float)chrono::duration_cast<chrono::milliseconds>
+			(chrono::high_resolution_clock::now() - minesweper.getStartTime()).count()/1000 + 
+			minesweper.getTimp() << "\b secunde" << endl;
 		afiseaza_grila(minesweper.getGrila());
 		cout << "Alegeti actiunea: " << endl;
 		cout << "1. Deschide celula" << endl;

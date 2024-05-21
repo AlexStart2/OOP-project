@@ -43,6 +43,10 @@ public:
 		return grila;
 	}
 
+	Nivel getNivel() const {
+		return nivel;
+	}
+
 	bool verificaJocCastigat();
 
 	void salveaza_joc();
