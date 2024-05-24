@@ -24,11 +24,7 @@ bool Grila::deschide_celula(const int x, const int y) {
 		if (ConsoleApplication) {
 			cout << "Celula marcata! Nu se poate deschide!" << endl;
 			_getch();
-		}
-		else {
-			// TODO - implement Grila::deschide_celula
-		}
-			
+		}	
 		return true;
 	}
 
@@ -97,7 +93,7 @@ Grila& Grila::initializare(Nivel _nivel) {
 
 void Grila::plaseaza_mine()
 {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	int dimZonaX = 0;
 	int dimZonaY = 0;

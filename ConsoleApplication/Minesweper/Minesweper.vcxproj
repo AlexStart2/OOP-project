@@ -145,6 +145,7 @@
     <ClCompile Include="..\ConsoleApplication\Grila.cpp" />
     <ClCompile Include="..\ConsoleApplication\Joc.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TextBox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ConsoleApplication\Celula.h" />
@@ -153,7 +154,10 @@
     <ClInclude Include="..\ConsoleApplication\Nivel.h" />
     <ClInclude Include="..\ConsoleApplication\Stare.h" />
     <ClInclude Include="..\ConsoleApplication\Tip.h" />
+    <ClInclude Include="Components.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="TextBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Minesweper.rc" />

@@ -53,7 +53,7 @@ public:
 	friend class Joc;
 
 	friend void afiseaza_grila(const Grila& grila);
-	friend void startGame(sf::RenderWindow& window, Grila& grila);
+//	friend void startGame(sf::RenderWindow& window, Grila& grila);
 };
 
 #endif

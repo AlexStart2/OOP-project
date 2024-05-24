@@ -77,26 +77,27 @@ void Joc::joc_pierdut(int y, int x) {
 
 
 
-bool Joc::actiune_joc(int y, int x, bool deschideORmarcheaza) {
+bool Joc::actiune_joc(int x, int y, bool deschideORmarcheaza) {
 	if (deschideORmarcheaza) {
 		return grila.deschide_celula(x, y);
 	}
 	else {
 		grila.marcheaza_celula(x, y);
+		return true;
 	}
 }
 
-bool Joc::nivelValid(const int x, const int y, const int nrMine) const {
-	if (x < NR_MINIM_LINII || y < NR_MINIM_COLOANE || nrMine < NR_MINIM_MINE) {
-		return false;
+int Joc::nivelValid(const int x, const int y, const int nrMine) const {
+	if (x < NR_MINIM_LINII || x > NR_MAXIM_LINII) {
+		return 1;
 	}
-	if (x > NR_MAXIM_LINII || y > NR_MAXIM_COLOANE) {
-		return false;
+	if (y > NR_MAXIM_COLOANE || y < NR_MINIM_COLOANE) {
+		return 2;
 	}
-	if (nrMine > (x * y * NIVEL_MAX)) {
-		return false;
+	if (nrMine > x * y * NIVEL_MAX || nrMine < NR_MINIM_MINE) {
+		return 3;
 	}
-	return true;
+	return 0;
 }
 
 bool Joc::verificaJocCastigat() {
@@ -106,7 +107,8 @@ bool Joc::verificaJocCastigat() {
 
 		for (int i = 0; i < grila.nrLinii; i++) {
 			for (int j = 0; j < grila.nrColoane; j++) {
-				if (grila.matrice[i][j].getTip() == Mina && grila.matrice[i][j].getStare() != Marcata) {
+				if ((grila.matrice[i][j].getTip() == Mina && grila.matrice[i][j].getStare() != Marcata) ||
+					(grila.matrice[i][j].getTip() == Normala && grila.matrice[i][j].getStare() != Deschisa)) {
 					return false;
 				}
 			}
@@ -138,9 +140,14 @@ void Joc::salveaza_joc()
 		if (fileConfig.is_open()) {
 			auto end = chrono::high_resolution_clock::now();
 			float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000 + timp;
+			char name[20];
+			// copy in name the name of the level but take only string before the first space
+			strcpy_s(name, nivel.nume);
+			name[strcspn(name, " ")] = 0;
 
 			fileConfig << nivel.nrLinii << DELIMITER << nivel.nrColoane << DELIMITER
-				<< nivel.nrMine << DELIMITER << grila.nrMineMarcate << DELIMITER << t << endl;
+				<< nivel.nrMine << DELIMITER << name << DELIMITER << grila.nrMineMarcate 
+				<< DELIMITER << t << endl;
 			
 			fileConfig.close();
 		}
@@ -149,8 +156,10 @@ void Joc::salveaza_joc()
 				cout << "Eroare la deschiderea fisierului!" << endl;
 			}
 			else {
-				// TODO - implement Joc::salveaza_joc
-				throw exception("Not yet implemented");
+				cout << "EROARE" << endl;
+				string error = "Can not open the file ";
+				error += FISIER_CONFIG;
+				throw exception(error.c_str());
 			}
 		}
 
@@ -184,8 +193,10 @@ void Joc::salveaza_joc()
 			cout << "Eroare la deschiderea fisierului!" << endl;
 		}
 		else {
-			// TODO - implement Joc::salveaza_joc
-			throw exception("Not yet implemented");
+			cout << "EROARE2" << endl;
+			string error = "Can not open the file ";
+			error += FISIER;
+			throw exception(error.c_str());
 		}
 	}
 }
@@ -194,14 +205,16 @@ bool Joc::incarca_joc() {
 	ifstream file(FISIER);
 	if (file.is_open()) {
 		int nrLinii, nrColoane, nrMine, nrMineMarcate;
+		char nume[20];
 		float timp;
 		ifstream fileConfig(FISIER_CONFIG);
 		if (fileConfig.is_open()) {
-			fileConfig >> nrLinii >> nrColoane >> nrMine >> nrMineMarcate >> timp;
+			fileConfig >> nrLinii >> nrColoane >> nrMine >> nume >> nrMineMarcate >> timp;
 
 			nivel.nrColoane = nrColoane;
 			nivel.nrLinii = nrLinii;
 			nivel.nrMine = nrMine;
+			strcpy_s(nivel.nume, nume);
 
 			grila.nrMineMarcate = nrMineMarcate;
 			grila.nrColoane = nrColoane;
@@ -216,8 +229,10 @@ bool Joc::incarca_joc() {
 				return false;
 			}
 			else {
-				// TODO - implement Joc::incarca_joc
-				throw exception("Not yet implemented");
+				cout << "Eroare la deschiderea fisierului!" << endl;
+				string error = "Can not open the file ";
+				error += FISIER_CONFIG;
+				throw exception(error.c_str());
 			}
 		}
 
@@ -244,6 +259,7 @@ bool Joc::incarca_joc() {
 					}
 					else {
 						// TODO - implement Joc::incarca_joc
+
 						throw exception("Not yet implemented");
 					}
 				}
@@ -284,6 +300,9 @@ bool Joc::incarca_joc() {
 			return false;
 		}
 		else {
+			string error = "Can not open the file ";
+			error += FISIER;
+			throw exception(error.c_str());
 			return false;
 		}
 	}
@@ -328,25 +347,26 @@ float Joc::CalculScor() {
 	return scor;
 }
 
-void Joc::salveaza_scor() {
+float Joc::salveaza_scor() {
 
 	ofstream file(FISIER_SCOR, ios::app);
 	if (file.is_open()) {
-
 		file << getCurrentDate() << DELIMITER << nivel.nume 
-			<< DELIMITER << grila.nrLinii << "x" << grila.nrColoane << DELIMITER
-			<< timp  << DELIMITER << grila.numar_mine << DELIMITER << grila.getNrMineMarcateGresit() 
+			<< DELIMITER << grila.getNrColoane() << DELIMITER << grila.getNrColoane() << timp  
+			<< DELIMITER << grila.numar_mine << DELIMITER << grila.getNrMineMarcateGresit() 
 			<< DELIMITER << scor << endl;
 
 		file.close();
+		return scor;
 	}
 	else {
 		if (ConsoleApplication) {
 			cout << "Eroare la deschiderea fisierului!" << endl;
 		}
 		else {
-			// TODO - implement Joc::salveaza_scor
-			throw exception("Not yet implemented");
+			string error = "Can not open the file ";
+			error += FISIER_SCOR;
+			throw exception(error.c_str());
 		}
 	}
 }
@@ -377,8 +397,9 @@ string Joc::getScoruri() {
 			cout << "Eroare la deschiderea fisierului!" << endl;
 		}
 		else {
-			// TODO - implement Joc::getScoruri
-			throw exception("Not yet implemented");
+			string error = "Can not open the file ";
+			error += FISIER_SCOR;
+			throw exception(error.c_str());
 		}
 	}
 	return scoruri;
