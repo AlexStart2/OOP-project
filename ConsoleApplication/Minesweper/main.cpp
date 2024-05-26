@@ -16,7 +16,7 @@ using namespace sf;
 int main()
 { 
     RenderWindow window(VideoMode(windowWidth, windowHeight), "Minesweper");
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(40);
 	
 	if (!backgroundTexture.loadFromFile("Texture/background.jpg")) {
 		std::cerr << "Error loading background image!" << std::endl;
@@ -37,6 +37,7 @@ int main()
 	int i = 0;
 	Box newGameButton = createButton("Joc nou", menuPosX, (menuPosY + SPACE) * ++i);
 	Box loadGameButton = createButton("Incarca joc", menuPosX, (menuPosY + SPACE) * ++i);
+	Box showScoresButton = createButton("Clasament", menuPosX, (menuPosY + SPACE) * ++i);
 	Box exitButton = createButton("Iesire", menuPosX, (menuPosY + SPACE) * ++i);
 
 	Box returnButton = createButton("<", 5, 5, 20, 20);
@@ -66,6 +67,9 @@ int main()
 	Text errorText = createText("", posX, menuPosY * ++k, FONT_SIZE);
 	errorText.setFillColor(Color::Red);
 
+	Text titleGameRules = createText("Reguli joc", textPosX + 20, 20, FONT_SIZE + 3);
+	Text txtGameRules = createText(gameRules,textPosX, 60, FONT_SIZE - 2);
+
     while (window.isOpen())
     {
         Event event;
@@ -81,7 +85,7 @@ int main()
 			}
 
 			if (mainMenu) {
-				EventMenu(window, event, newGameButton, loadGameButton, exitButton, minesweper);
+				EventMenu(window, event, newGameButton, loadGameButton, showScoresButton, exitButton, minesweper);
 			}
 			else if (chooseLevel) {
 				EventLevelMenu(window, event, returnButton, levelButtons, minesweper, rowsTextBox,
@@ -94,7 +98,9 @@ int main()
 		window.draw(background);
 
 		if (mainMenu) {
-			drawMenu(window, newGameButton, loadGameButton, exitButton);
+			window.draw(txtGameRules);
+			window.draw(titleGameRules);
+			drawMenu(window, newGameButton, loadGameButton, showScoresButton, exitButton);
 		}
 		else if (chooseLevel) {
 			window.draw(rowsText);
@@ -163,7 +169,7 @@ bool isCursorOverShape(const RectangleShape& shape, const RenderWindow& window)
 }
 
 void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
-	Box& loadGameButton, Box& exitButton, Joc& minesweper)
+	Box& loadGameButton, Box& showScoresButton, Box& exitButton, Joc& minesweper)
 {
 	if (event.type == Event::MouseMoved || event.type == Event::MouseButtonPressed)
 	{
@@ -201,6 +207,20 @@ void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
 		}
 		else {
 			buttonHover(loadGameButton, window, false);
+		}
+
+		if (isCursorOverShape(showScoresButton.button, window)) {
+			buttonHover(showScoresButton, window, true);
+			if (Mouse::isButtonPressed(Mouse::Left)) {
+				if (DEBUG) {
+					std::cout << "Show Scores button clicked!" << std::endl;
+				}
+				scoresWindow(minesweper);
+			}
+			hover = true;
+		}
+		else {
+			buttonHover(showScoresButton, window, false);
 		}
 
 		if (isCursorOverShape(exitButton.button, window)) {
@@ -344,13 +364,16 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton,
 }
 
 void drawMenu(RenderWindow& window, Box& newGameButton,
-	Box& loadGameButton, Box& exitButton)
+	Box& loadGameButton, Box& showScoresButton, Box& exitButton)
 {
 	window.draw(newGameButton.button);
 	window.draw(newGameButton.text);
 
 	window.draw(loadGameButton.button);
 	window.draw(loadGameButton.text);
+
+	window.draw(showScoresButton.button);
+	window.draw(showScoresButton.text);
 
 	window.draw(exitButton.button);
 	window.draw(exitButton.text);
@@ -394,10 +417,6 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 		std::cerr << "Error loading open cell image!" << std::endl;
 	}
 
-	Sprite  background(backgroundTexture);
-	background.setScale(windowWidth / background.getLocalBounds().width, windowHeight /
-		background.getLocalBounds().height);
-
 	Grila& grila = minesweper.getGrila();
 	if (!loaded) {
 		grila = minesweper.incepe_joc(level);
@@ -405,6 +424,10 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 
 	int width = grila.getNrColoane() * cellSize + tableMargin;
 	int height = grila.getNrLinii() * cellSize + marginTop + tableMargin / 2;
+
+	Sprite  background(backgroundTexture);
+	background.setScale(width / background.getLocalBounds().width, height /
+		background.getLocalBounds().height);
 
 	vector<cellBox> cells;
 
@@ -790,4 +813,29 @@ Text createText(const std::string& text, int x, int y, int size) {
 	t.setFillColor(Color::Black);
 	t.setPosition(x, y);
 	return t;
+}
+
+void scoresWindow(Joc& minesweper) {
+	RenderWindow scoresWindow(VideoMode(600, 600), "Clasament");
+	Text scoresText = createText("Clasament", 150, 10, FONT_SIZE + 3);
+	Text scores = createText(minesweper.getScoruri(), 10, 50, FONT_SIZE - 2);
+
+
+	while (scoresWindow.isOpen())
+	{
+		Event scoresEvent;
+		while (scoresWindow.pollEvent(scoresEvent))
+		{
+			if (scoresEvent.type == Event::Closed) {
+				scoresWindow.close();
+			}
+			if (scoresEvent.type == Event::Resized) {
+				scoresWindow.setView(View(FloatRect(0, 0, scoresEvent.size.width, scoresEvent.size.height)));
+			}
+		}
+		scoresWindow.clear(Color::White);
+		scoresWindow.draw(scoresText);
+		scoresWindow.draw(scores);
+		scoresWindow.display();
+	}
 }

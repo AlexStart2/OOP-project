@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Nivel.h"
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -7,7 +7,7 @@ const bool DEBUG = true;
 
 const char* fontPath = "TellMeAJoke.ttf";
 
-const int windowWidth = 1000;
+const int windowWidth = 1100;
 const int windowHeight = 700;
 
 const Color buttonColor = Color(192, 192, 192, 255);
@@ -79,3 +79,25 @@ const std::vector<Nivel> levels = {
 	Mediu9, Mediu16, Mediu30,
 	Avansat9, Avansat16, Avansat30
 };
+
+const std::string gameRules = 
+"1. Jocul se desfasoara pe o grila rectangulara, avand un numar predefinit de mine ascunse.\n\
+2. Fiecare celula din grila poate fi in una dintre urmatoarele stari :\n\
+	a. Goala : Nu contine nicio mina si nu are asociat niciun numar.\n\
+	b. Mina : Contine o mina ascunsa.Dezvaluirea unei astfel de celule duce la pierderea\n\
+	   jocului.\n\
+	c. Numar : Contine un numar care indica cate mine sunt invecinate cu celula\n\
+	   respectiva.\n\
+3. Jucatorul poate dezvalui o celula facand clic pe ea cu butonul stang al mouse - ului.\n\
+4. Atunci cand o celula goala este dezvaluita, toate celulele goale adiacente, care nu contin\n\
+   numere, sunt dezvaluite automat.\n\
+5. Daca o celula cu numar este dezvaluita, vor fi afisate doar numarul respectiv si celulele\n\
+   goale adiacente.\n\
+6. Jucatorul poate marca o celula ca fiind suspecta de a contine o mina facand clic dreapta\n\
+   pe ea.Celulele marcate vor fi evidentiate cu un steag.\n\
+7. Dezmarcarea unei celule marcate se realizeaza facand din nou clic dreapta pe aceasta.\n\
+8. Jucatorul castiga jocul daca reuseste sa dezvaluie toate celulele goale fara a detona vreo\n\
+   mina.\n\
+9. Jucatorul pierde jocul daca dezvaluie o celula care contine o mina. Numarul ramas de\n\
+   mine este afisat in coltul din stanga, iar cronometrul jocului este afisat in coltul din\n\
+   dreapta.";

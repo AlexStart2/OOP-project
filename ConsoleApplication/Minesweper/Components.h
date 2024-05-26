@@ -9,9 +9,9 @@ Box createButton(const std::string& text, int x, int y, float width = WIDTH, flo
 void buttonHover(Box& button, RenderWindow& window, bool hover);
 bool isCursorOverShape(const RectangleShape& shape, const RenderWindow& window);
 void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
-	Box& loadGameButton, Box& exitButton, Joc& minesweper);
+	Box& loadGameButton, Box& showScoresButton, Box& exitButton, Joc& minesweper);
 void drawMenu(RenderWindow& window, Box& newGameButton,
-	Box& loadGameButton, Box& exitButton);
+	Box& loadGameButton, Box& showScoresButton, Box& exitButton);
 void drawLevelMenu(RenderWindow& window, std::vector<Box>& levelButtons, Box& returnButton,
 	TextBox& rowsTextBox, TextBox& columnsTextBox, TextBox& minesTextBox, Box& startButton);
 void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool loaded);
@@ -21,3 +21,4 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton, vecto
 	Joc& minesweper, TextBox& rowsTextBox, TextBox& columnsTextBox, TextBox& minesTextBox, Box& startButton,
 	Text& errorMessage);
 Text createText(const std::string& text, int x, int y, int size);
+void scoresWindow(Joc& minesweper);
