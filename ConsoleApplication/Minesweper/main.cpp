@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <string>
+#include <sstream>
+#include <iomanip>
+#include <windows.h>
 
 #include "TextBox.h"
 #include "globals.h"
@@ -11,28 +14,25 @@
 #include "Nivel.h"
 #include "Grila.h"
 
+#define _WIN32_WINNT 0x0500
+
 using namespace sf;
+using namespace std;
 
 int main()
 { 
+	hideConsoleWindow();
+	loadResources();
+
     RenderWindow window(VideoMode(windowWidth, windowHeight), "Minesweper");
 	window.setFramerateLimit(40);
-	
-	if (!backgroundTexture.loadFromFile("Texture/background.jpg")) {
-		std::cerr << "Error loading background image!" << std::endl;
-	}
+
 	Sprite  background(backgroundTexture);
 
 	background.setScale(windowWidth / background.getLocalBounds().width, windowHeight / 
 		background.getLocalBounds().height);
 
 	Joc minesweper;
-
-	if (!font.loadFromFile(fontPath)) {
-		std::cerr << "Error loading font file!" << std::endl;
-	}
-	handCursor.loadFromSystem(Cursor::Hand);
-	arrowCursor.loadFromSystem(Cursor::Arrow);
 
 	int i = 0;
 	Box newGameButton = createButton("Joc nou", menuPosX, (menuPosY + SPACE) * ++i);
@@ -43,25 +43,25 @@ int main()
 	Box returnButton = createButton("<", 5, 5, 20, 20);
 	returnButton.text.setFont(font);
 
-	std::vector<Box> levelButtons;
+	vector<Box> levelButtons;
 	int buttonY = 50;
 	for (const auto& level : levels) {
 		Box button = createButton(level.nume, menuPosX, buttonY);
 		levelButtons.push_back(button);
-		buttonY += HEIGHT + 10.0f;
+		buttonY += HEIGHT + 10;
 	}
 
-	int posX = menuPosX * 2.5 + WIDTH * 2;
+	int posX = (int) (menuPosX * 2.5 + WIDTH * 2);
 	int textPosX = menuPosX * 2 + WIDTH;
 	int k = 1;
 	const int sizeX = 200;
 	const int sizeY = 40;
 	Text rowsText = createText("Numarul de linii: ", textPosX, menuPosY * ++k, FONT_SIZE);
-	TextBox rowsTextBox(posX, menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
+	TextBox rowsTextBox((float)posX, (float)menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
 	Text columnsText = createText("Numarul de coloane: ", textPosX, menuPosY * ++k, FONT_SIZE);
-	TextBox columnsTextBox(posX, menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
+	TextBox columnsTextBox((float)posX,(float) menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
 	Text minesText = createText("Numarul de mine: ", textPosX, menuPosY * ++k, FONT_SIZE);
-	TextBox minesTextBox(posX, menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
+	TextBox minesTextBox((float)posX, (float) menuPosY * k, sizeX, sizeY, font, FONT_SIZE);
 	Box startButton = createButton("Start", posX, menuPosY * ++k);
 
 	Text errorText = createText("", posX, menuPosY * ++k, FONT_SIZE);
@@ -81,7 +81,7 @@ int main()
 			}
                 
 			if (event.type == Event::Resized) {
-				window.setView(View(FloatRect(0, 0, event.size.width, event.size.height)));
+				window.setView(View(FloatRect(0.0f, 0.0f,(float) event.size.width, (float)event.size.height)));
 			}
 
 			if (mainMenu) {
@@ -118,12 +118,34 @@ int main()
 }
 
 
-Box createButton(const std::string& text, int x, int y, float width, float height)
+void hideConsoleWindow() {
+	HWND hWnd = GetConsoleWindow();
+	ShowWindow(hWnd, SW_HIDE);
+}
+
+void loadResources() {
+	try {
+		if (!backgroundTexture.loadFromFile("Texture/background.jpg")) {
+			throw runtime_error("Error loading background texture!");
+		}
+		if (!font.loadFromFile(fontPath)) {
+			throw runtime_error("Error loading font!");
+		}
+		handCursor.loadFromSystem(Cursor::Hand);
+		arrowCursor.loadFromSystem(Cursor::Arrow);
+	}
+	catch (const exception& e) {
+		ErrorMessageBox(e.what());
+		exit(-1);
+	}
+}
+
+Box createButton(const string& text, int x, int y, float width, float height)
 {
 	Box button;
 
 	button.button.setSize(Vector2f(width, height));
-	button.button.setPosition(x, y);
+	button.button.setPosition((float)x, (float)y);
 	button.button.setFillColor(buttonColor);
 	button.button.setOutlineThickness(BUTTON_BORDER_THICKNESS);
 	button.button.setOutlineColor(buttonBorderColor);
@@ -181,7 +203,7 @@ void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
 				mainMenu = false;
 				chooseLevel = true;
 				if (DEBUG) {
-					std::cout << "New Game button clicked!" << std::endl;
+					cout << "New Game button clicked!" <<endl;
 				}
 			}
 			hover = true;
@@ -194,11 +216,18 @@ void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
 			buttonHover(loadGameButton, window, true);
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				if (DEBUG) {
-					std::cout << "Load Game button clicked!" << std::endl;
+					cout << "Load Game button clicked!" << endl;
 				}
-				if (!minesweper.incarca_joc()) {
-					cout << "Eroare la incarcarea datelor din fisier" << endl;
+				try {
+					if (!minesweper.incarca_joc()) {
+						cerr << "Eroare la incarcarea datelor din fisier" << endl;
+					}
 				}
+				catch (const exception& e) {
+					ErrorMessageBox(e.what());
+					return;
+				}
+				
 				mainMenu = false;
 				chooseLevel = false;
 				startGame(window, minesweper, minesweper.getNivel(), true);
@@ -213,7 +242,7 @@ void EventMenu(RenderWindow& window, Event& event, Box& newGameButton,
 			buttonHover(showScoresButton, window, true);
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				if (DEBUG) {
-					std::cout << "Show Scores button clicked!" << std::endl;
+					cout << "Show Scores button clicked!" << endl;
 				}
 				scoresWindow(minesweper);
 			}
@@ -276,9 +305,9 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton,
 					return;
 				}
 
-				nrLinii = std::stoi(rows);
-				nrColoane = std::stoi(columns);
-				nrMine = std::stoi(mines);
+				nrLinii = stoi(rows);
+				nrColoane = stoi(columns);
+				nrMine = stoi(mines);
 
 				int code = minesweper.nivelValid(nrLinii, nrColoane, nrMine);
 
@@ -296,14 +325,14 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton,
 						to_string(minesweper.NR_MINIM_COLOANE) + " si " + to_string(minesweper.NR_MAXIM_COLOANE));
 				}
 				else if (errorCode == 3) {
-					int max = minesweper.NIVEL_MAX * nrLinii * nrColoane;
+					int max = (int)(minesweper.NIVEL_MAX * nrLinii * nrColoane);
 					errorMessage.setString("Numarul de mine trebuie sa fie intre " +
 						to_string(minesweper.NR_MINIM_MINE) + " si " + to_string(max));
 				}
 				return;
 			}
-			catch (const std::exception& e) {
-				throw e;
+			catch (const exception& e) {
+				ErrorMessageBox(e.what());
 				return;
 			}
 			
@@ -336,10 +365,10 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton,
 			hover = true;
 			if (Mouse::isButtonPressed(Mouse::Left)) {
 				if (DEBUG) {
-					std::cout << button.text.getString().toAnsiString() << " button clicked!" << std::endl;
+					cout << button.text.getString().toAnsiString() << " button clicked!" << endl;
 				}
 
-				std::string levelName = button.text.getString().toAnsiString();
+				string levelName = button.text.getString().toAnsiString();
 				Nivel level = Incepator16;
 				for (const auto& l : levels) {
 					if (l.nume == levelName) {
@@ -379,7 +408,7 @@ void drawMenu(RenderWindow& window, Box& newGameButton,
 	window.draw(exitButton.text);
 }
 
-void drawLevelMenu(RenderWindow& window, std::vector<Box>& levelButtons, Box& returnButton,
+void drawLevelMenu(RenderWindow& window, vector<Box>& levelButtons, Box& returnButton,
 	TextBox& rowsTextBox, TextBox& columnsTextBox, TextBox& minesTextBox, Box& startButton)
 {
 	for (Box button : levelButtons) {
@@ -401,21 +430,28 @@ void drawLevelMenu(RenderWindow& window, std::vector<Box>& levelButtons, Box& re
 
 void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool loaded)
 {
-	if (!mineTexture.loadFromFile("Texture/openCellMine.bmp")) {
-		std::cerr << "Error loading mine image!" << std::endl;
+	try {
+		if (!mineTexture.loadFromFile("Texture/openCellMine.bmp")) {
+			throw exception("Error loading mine texture!");
+		}
+		if (!flagTexture.loadFromFile("Texture/flag (1).png")) {
+			throw exception("Error loading flag texture!");
+		}
+		if (!BOOMTexture.loadFromFile("Texture/boomMine.bmp")) {
+			throw exception("Error loading blast texture!");
+		}
+		if (!cellTexture.loadFromFile("Texture/cell.bmp")) {
+			throw exception("Error loading cell texture!");
+		}
+		if (!openCellTexture.loadFromFile("Texture/openCell.bmp")) {
+			throw exception("Error loading open cell texture!");
+		}
 	}
-	if (!flagTexture.loadFromFile("Texture/flag (1).png")) {
-		std::cerr << "Error loading flag image!" << std::endl;
+	catch (const exception& e) {
+		ErrorMessageBox(e.what());
+		return;
 	}
-	if (!BOOMTexture.loadFromFile("Texture/boomMine.bmp")) {
-		std::cerr << "Error loading blast image!" << std::endl;
-	}
-	if (!cellTexture.loadFromFile("Texture/cell.bmp")) {
-		std::cerr << "Error loading cell image!" << std::endl;
-	}
-	if (!openCellTexture.loadFromFile("Texture/openCell.bmp")) {
-		std::cerr << "Error loading open cell image!" << std::endl;
-	}
+	
 
 	Grila& grila = minesweper.getGrila();
 	if (!loaded) {
@@ -433,7 +469,7 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 
 	int btnMarginTop = 10;
 
-	Box mineCounter = createButton(std::to_string(grila.getNumarMine()), 40, btnMarginTop);
+	Box mineCounter = createButton(to_string(grila.getNumarMine()), 40, btnMarginTop);
 	FloatRect textRect = mineCounter.text.getLocalBounds();
 	mineCounter.button.setSize(Vector2f(textRect.width + 30, textRect.height + btnMarginTop));
 	float mCtextPosX = mineCounter.button.getPosition().x + mineCounter.button.getSize().x / 2.0f;
@@ -441,8 +477,8 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 	mineCounter.text.setString(to_string(grila.getNumarMine() - grila.getNrMineMarcate()));
 	mineCounter.text.setPosition(mCtextPosX, mCtextPosY);
 
-	float tCPosX = width - 95;
-	float tCPosY = 10;
+	int tCPosX = width - 95;
+	int tCPosY = 10;
 
 	Box timeCounter = createButton("0", tCPosX, tCPosY, 60, textRect.height + 10);
 	minesweper.setStartTime(chrono::high_resolution_clock::now());
@@ -454,8 +490,8 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 	for (int i = 0; i < grila.getNrLinii(); i++) {
 		for (int j = 0; j < grila.getNrColoane(); j++) {
 			string text = to_string(grila.getCell(i, j).getNrVecini());
-			cellBox cell = newCell(j * (cellSize)+tableMargin / 2, i * (cellSize
-				)+marginTop, cellSize, grila.getCell(i, j), i, j, grila.getCell(i, j).getStare());
+			cellBox cell = newCell(j * (cellSize) + (float) tableMargin / 2, (float) i * cellSize
+				+ marginTop, cellSize, grila.getCell(i, j), i, j, grila.getCell(i, j).getStare());
 			cells.push_back(cell);
 		}
 	}
@@ -468,7 +504,7 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 	bool firstClick = true;
 	bool wonMessage = false;
 	float scor = 0.0f;
-	int time = 0;
+	float time = 0;
 
 	Box winMessage;
 	while (running)
@@ -501,7 +537,7 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 			}
 
 			if (event.type == Event::Resized) {
-				window.setView(View(FloatRect(0, 0, event.size.width, event.size.height)));
+				window.setView(View(FloatRect(0.0f, 0.0f, (float)event.size.width, (float)event.size.height)));
 			}
 
 			if (isCursorOverShape(restartButton.button, window)) {
@@ -619,7 +655,7 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 			timeCounter.text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 			timeCounter.text.setPosition(tCPosX + 60 / 2.0f, textRect.height + tCPosY / 2.0f);
 		}
-		timeCounter.text.setString(std::to_string(time));
+		timeCounter.text.setString(to_string((int)time));
 
 		window.draw(restartButton.button);
 		window.draw(restartButton.text);
@@ -671,14 +707,14 @@ void startGame(RenderWindow& window, Joc& minesweper, const Nivel level, bool lo
 	minesweper.endGame();
 }
 
-cellBox newCell(int x, int y, int cellSize, Celula cell, int i, int j, int st) {
+cellBox newCell(float x, float y, int cellSize, Celula cell, int i, int j, int st) {
 	cellBox button;
 
 
 	button.x = i;
 	button.y = j;
 
-	button.button.setSize(Vector2f(cellSize, cellSize));
+	button.button.setSize(Vector2f((float)cellSize, (float)cellSize));
 	button.button.setPosition(x, y);
 	button.button.setOutlineThickness(1);
 	button.button.setOutlineColor(buttonBorderColor);
@@ -757,11 +793,11 @@ int confirmToSave() {
 			bool hover = false;
 			if (event.type == Event::Closed) {
 				window.close();
-				return 2;
+				return 2; // Continua jocul
 			}
 
 			if (event.type == Event::Resized) {
-				window.setView(View(FloatRect(0, 0, event.size.width, event.size.height)));
+				window.setView(View(FloatRect(0.0f, 0.0f, (float)event.size.width, (float)event.size.height)));
 			}
 
 			if (isCursorOverShape(yesButton.button, window)) {
@@ -769,7 +805,7 @@ int confirmToSave() {
 				hover = true;
 				if (Mouse::isButtonPressed(Mouse::Left)) {
 					window.close();
-					return 1;
+					return 1; // Salveaza joc
 				}
 			}
 			else {
@@ -781,7 +817,7 @@ int confirmToSave() {
 				hover = true;
 				if (Mouse::isButtonPressed(Mouse::Left)) {
 					window.close();
-					return 0;
+					return 0; // Nu salva joc
 				}
 			}
 			else {
@@ -803,39 +839,136 @@ int confirmToSave() {
 		window.draw(noButton.text);
 		window.display();
 	}
+	return 1;
 }
 
-Text createText(const std::string& text, int x, int y, int size) {
+Text createText(const string& text, int x, int y, int size) {
 	Text t;
 	t.setFont(font);
 	t.setString(text);
 	t.setCharacterSize(size);
 	t.setFillColor(Color::Black);
-	t.setPosition(x, y);
+	t.setPosition((float)x, (float)y);
 	return t;
 }
 
 void scoresWindow(Joc& minesweper) {
-	RenderWindow scoresWindow(VideoMode(600, 600), "Clasament");
-	Text scoresText = createText("Clasament", 150, 10, FONT_SIZE + 3);
-	Text scores = createText(minesweper.getScoruri(), 10, 50, FONT_SIZE - 2);
+	const int width = 850;
+	const int height = 600;
+	RenderWindow scoresWindow(VideoMode(width, height), "Clasament");
+	Font font;
+	try {
+		if (!font.loadFromFile(fontPath)) {
+			throw exception("Error loading font file!");
+			return;
+		}
+	}
+	catch (const exception& e) {
+		ErrorMessageBox(e.what());
+		return;
+	}
+	
 
+	Text scoresTitle = createText("Clasament", 350, 10, FONT_SIZE + 3);
+	vector<Score> scores = parseScores(minesweper.getScoruri());
+	sort(scores.begin(), scores.end(), compareScores);
 
-	while (scoresWindow.isOpen())
-	{
-		Event scoresEvent;
-		while (scoresWindow.pollEvent(scoresEvent))
-		{
-			if (scoresEvent.type == Event::Closed) {
+	int startY = 50;
+	int offsetY = FONT_SIZE + 5;
+	int columnWidth = 140;
+
+	vector<Text> scoreTexts;
+
+	vector<string> headers = { "Date", "Difficulty", "Rows x Cols", "Time", "Mines", "Score" };
+	int headerX = 10;
+
+	for (const auto& header : headers) {
+		Text headerText = createText(header, headerX + (columnWidth / 2), startY, FONT_SIZE - 2);
+		headerText.setOrigin(headerText.getLocalBounds().width / 2, 0);
+		scoreTexts.push_back(headerText);
+		headerX += columnWidth;
+	}
+
+	startY += offsetY;
+
+	for (const auto& score : scores) {
+		string scoreStr = to_string(score.score);
+		scoreStr = scoreStr.substr(0, scoreStr.find(".") + 3);
+		ostringstream rowStream;
+		rowStream << setw(0) << score.date << " " << score.difficulty << " " << score.rows 
+			<< "x" << score.cols << " " << score.time << " " << score.mines << " " << scoreStr;
+		istringstream row(rowStream.str());
+
+		int columnX = 10;
+		string cell;
+		while (row >> cell) {
+			Text cellText = createText(cell, columnX + (columnWidth / 2), startY, FONT_SIZE - 2);
+			cellText.setOrigin(cellText.getLocalBounds().width / 2, 0);
+			scoreTexts.push_back(cellText);
+			columnX += columnWidth;
+		}
+
+		startY += offsetY;
+	}
+
+	View view(FloatRect(0.0f, 0.0f, (float)scoresWindow.getSize().x, (float)scoresWindow.getSize().y));
+	int totalHeight = startY;
+
+	Sprite  background(backgroundTexture);
+
+	background.setScale(windowWidth / background.getLocalBounds().width, windowHeight /
+		background.getLocalBounds().height);
+
+	while (scoresWindow.isOpen()) {
+		Event event;
+		while (scoresWindow.pollEvent(event)) {
+			if (event.type == Event::Closed) {
 				scoresWindow.close();
 			}
-			if (scoresEvent.type == Event::Resized) {
-				scoresWindow.setView(View(FloatRect(0, 0, scoresEvent.size.width, scoresEvent.size.height)));
+			if (event.type == Event::MouseWheelScrolled) {
+				if (event.mouseWheelScroll.delta < 0 && view.getCenter().y + view.getSize().y / 2 < totalHeight) {
+					view.move(0, 10);
+				}
+				else if (event.mouseWheelScroll.delta > 0 && view.getCenter().y - view.getSize().y / 2 > 0) {
+					view.move(0, -10);
+				}
 			}
 		}
+
 		scoresWindow.clear(Color::White);
-		scoresWindow.draw(scoresText);
-		scoresWindow.draw(scores);
+		scoresWindow.setSize(Vector2u(width, height));
+
+		scoresWindow.draw(background);
+		scoresWindow.setView(view);
+		scoresWindow.draw(scoresTitle);
+		for (const auto& text : scoreTexts) {
+			scoresWindow.draw(text);
+		}
 		scoresWindow.display();
 	}
+}
+
+vector<Score> parseScores(const string& scoresStr) {
+	vector<Score> scores;
+	istringstream ss(scoresStr);
+	string line;
+
+	while (getline(ss, line)) {
+		istringstream lineStream(line);
+		Score score;
+		lineStream >> score.date >> score.difficulty >> score.rows >> score.cols >> 
+			score.time >> score.mines >> score.score;
+		scores.push_back(score);
+	}
+
+	return scores;
+}
+
+bool compareScores(const Score& a, const Score& b) {
+	return a.score > b.score;
+}
+
+void ErrorMessageBox(const string& message) {
+	MessageBoxA(NULL, message.c_str(), "Error", MB_OK | MB_ICONERROR);
+	return;
 }

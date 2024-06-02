@@ -70,9 +70,6 @@ void Grila::marcheaza_celula(const int x, const int y) {
 			cout << "Celula deschisa! Nu se poate marca!" << endl;
 			_getch();
 		}
-		else {
-			// TODO - implement Grila::marcheaza_celula
-		}
 	}
 }
 
@@ -212,7 +209,13 @@ void Grila::plaseaza_mine()
 				for (int l = j - 1; l <= j + 1; ++l) {
 					if (k >= 0 && k < nrLinii && l >= 0 && l < nrColoane) {
 						if (matrice[k][l].getTip() == Mina) {
-							matrice[i][j].setNrVecini(matrice[i][j].getNrVecini() + 1);
+							try {
+								matrice[i][j].setNrVecini(matrice[i][j].getNrVecini() + 1);
+							}
+							catch (exception e) {
+								cout << e.what() << endl;
+							}
+							
 						}
 					}
 				}

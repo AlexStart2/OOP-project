@@ -32,7 +32,6 @@ void Joc::joc_pierdut(int y, int x) {
 		y--;
 	}
 
-
 	CalculScor();
 	if (ConsoleApplication) {
 		cout << "Joc pierdut! Celula (" << y+1 << ", " << x+1 << ") continea o mina!" << endl;
@@ -78,6 +77,11 @@ void Joc::joc_pierdut(int y, int x) {
 
 
 bool Joc::actiune_joc(int x, int y, bool deschideORmarcheaza) {
+	if (ConsoleApplication) {
+		x--;
+		y--;
+	}
+
 	if (deschideORmarcheaza) {
 		return grila.deschide_celula(x, y);
 	}
@@ -141,7 +145,6 @@ void Joc::salveaza_joc()
 			auto end = chrono::high_resolution_clock::now();
 			float t = (float)chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000 + timp;
 			char name[20];
-			// copy in name the name of the level but take only string before the first space
 			strcpy_s(name, nivel.nume);
 			name[strcspn(name, " ")] = 0;
 
@@ -258,9 +261,7 @@ bool Joc::incarca_joc() {
 						return false;
 					}
 					else {
-						// TODO - implement Joc::incarca_joc
-
-						throw exception("Not yet implemented");
+						throw exception("Datele din fisier sunt invalide!");
 					}
 				}
 
@@ -315,13 +316,11 @@ bool Joc::validareDateFisier(string data) {
 			return true;
 		}
 		else {
-			//exceptie
 			return false;
 		}
 	}
 	else if (data.length() == 1 && isdigit(data[0])) {
 		if (data[0] < '0' || data[0] > '9') {
-			//exceptie
 			return false;
 		}
 		else {
@@ -332,7 +331,6 @@ bool Joc::validareDateFisier(string data) {
 		return true;
 	}
 	else {
-		//exceptie
 		return false;
 	}
 	
@@ -352,9 +350,8 @@ float Joc::salveaza_scor() {
 	ofstream file(FISIER_SCOR, ios::app);
 	if (file.is_open()) {
 		file << getCurrentDate() << DELIMITER << nivel.nume 
-			<< DELIMITER << grila.getNrColoane() << DELIMITER << grila.getNrColoane() << timp  
-			<< DELIMITER << grila.numar_mine << DELIMITER << grila.getNrMineMarcateGresit() 
-			<< DELIMITER << scor << endl;
+			<< DELIMITER << grila.getNrColoane() << DELIMITER << grila.getNrLinii() << DELIMITER << timp  
+			<< DELIMITER << grila.numar_mine << DELIMITER << scor << endl;
 
 		file.close();
 		return scor;

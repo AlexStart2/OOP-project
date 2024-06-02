@@ -197,7 +197,7 @@ void ruleaza_joc(Joc& minesweper) {
 				break;
 			}
 
-			if (!minesweper.actiune_joc(x, y, true)) {
+			if (!minesweper.actiune_joc(y, x, true)) {
 				minesweper.joc_pierdut(x, y);
 				cout << "Doriti sa salvati scorul? (D/N): ";
 				cin >> opt;

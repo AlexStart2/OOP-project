@@ -14,7 +14,7 @@ private:
 	Nivel nivel;
 	float scor;
 	Grila grila;
-	chrono::time_point<std::chrono::steady_clock> start;
+	chrono::time_point<chrono::steady_clock> start;
 	float timp;
 public:
 	static const char FISIER[20];
@@ -59,10 +59,10 @@ public:
 
 	bool validareDateFisier(string data);
 
-	void setStartTime(chrono::time_point<std::chrono::steady_clock> start) {
+	void setStartTime(chrono::time_point<chrono::steady_clock> start) {
 		this->start = start;
 	}
-	chrono::time_point<std::chrono::steady_clock> getStartTime() const {
+	chrono::time_point<chrono::steady_clock> getStartTime() const {
 		return start;
 	}
 

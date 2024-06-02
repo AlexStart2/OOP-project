@@ -3,13 +3,14 @@
 #include <SFML/Graphics.hpp>
 
 using namespace sf;
+using namespace std;
 
 class TextBox
 {
 private:
     RectangleShape box;
     Text text;
-    std::string input;
+    string input;
     bool hasFocus;
 
 public:
@@ -17,11 +18,11 @@ public:
     void handleEvent(Event event);
     void draw(RenderWindow& window);
 
-    std::string getText() const {
+    string getText() const {
         return input;
     }
 
-    void setText(const std::string& str) {
+    void setText(const string& str) {
         input = str;
         text.setString(input);
     }

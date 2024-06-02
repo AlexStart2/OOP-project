@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-const bool DEBUG = true;
+const bool DEBUG = false;
 
 const char* fontPath = "TellMeAJoke.ttf";
 
@@ -42,7 +42,7 @@ const float xButtonText = 50;
 const float yButtonText = 10;
 
 const float scaleRate = 1.24f;
-const float tableMargin = 30;
+const int tableMargin = 30;
 
 bool mainMenu = true;
 bool chooseLevel = false;
@@ -52,11 +52,12 @@ Texture flagTexture;
 Texture BOOMTexture;
 Texture cellTexture;
 Texture openCellTexture;
+Texture backgroundTexture;
 
 Cursor handCursor;
 Cursor arrowCursor;
 
-Texture backgroundTexture;
+
 
 Font font;
 
@@ -74,13 +75,23 @@ struct cellBox {
 	int state = 0;
 };
 
-const std::vector<Nivel> levels = {
+const vector<Nivel> levels = {
 	Incepator9, Incepator16, Incepator30,
 	Mediu9, Mediu16, Mediu30,
 	Avansat9, Avansat16, Avansat30
 };
 
-const std::string gameRules = 
+struct Score {
+	string date;
+	string difficulty;
+	int rows;
+	int cols;
+	double time;
+	int mines;
+	double score;
+};
+
+const string gameRules = 
 "1. Jocul se desfasoara pe o grila rectangulara, avand un numar predefinit de mine ascunse.\n\
 2. Fiecare celula din grila poate fi in una dintre urmatoarele stari :\n\
 	a. Goala : Nu contine nicio mina si nu are asociat niciun numar.\n\

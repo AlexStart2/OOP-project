@@ -17,7 +17,7 @@ TextBox::TextBox(float x, float y, float width, float height, const Font& font, 
 
 void TextBox::handleEvent(Event event) {
     if (event.type == Event::MouseButtonPressed) {
-        if (box.getGlobalBounds().contains(event.mouseButton.x, event.mouseButton.y)) {
+        if (box.getGlobalBounds().contains((float)event.mouseButton.x, (float)event.mouseButton.y)) {
             hasFocus = true;
         }
         else {
