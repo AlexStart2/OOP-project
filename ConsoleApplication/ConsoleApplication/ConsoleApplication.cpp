@@ -58,7 +58,7 @@ int main()
 				cout << "6. Mediu 16x30 120 mine" << endl;
 				cout << "7. Avansat 9x9 31 mine" << endl;
 				cout << "8. Avansat 16x16 96 mine" << endl;
-				cout << "9. Avansat 16x30 167 mine" << endl << endl;
+				cout << "9. Avansat 16x30 167 mine" << endl;
 				cout << "0. Custom" << endl;
 				cout << "Alegeti optiune: ";
 
@@ -98,10 +98,10 @@ int main()
 						cout << "Nr. maxim de coloane: " << minesweper.NR_MAXIM_COLOANE << endl;
 						cout << "Nr. minim de coloane: " << minesweper.NR_MINIM_COLOANE << endl;
 
-						cout << "Nr. maxim de mine: " << minesweper.NIVEL_MAX << "% din toata grila" << endl;
+						cout << "Nr. maxim de mine: " << minesweper.NIVEL_MAX * 100 << "% din toata grila" << endl;
 						cout << "Nr. minim de mine: " << minesweper.NR_MINIM_MINE << endl;
 						cout << "Introduceti numarul de linii, coloane si mine: ";
-						cin >> level.nrColoane >> level.nrLinii >> level.nrMine;
+						cin >> level.nrLinii >> level.nrColoane >> level.nrMine;
 						if (!minesweper.nivelValid(level.nrLinii, level.nrColoane, level.nrMine)) {
 							cout << "Nivelul introdus nu este valid" << endl;
 							_getch();
@@ -223,7 +223,7 @@ void ruleaza_joc(Joc& minesweper) {
 				_getch();
 				break;
 			}
-			minesweper.actiune_joc(x, y, false);
+			minesweper.actiune_joc(y, x, false);
 			if (minesweper.verificaJocCastigat()) {
 				return;
 			}

@@ -277,6 +277,11 @@ void EventLevelMenu(RenderWindow& window, Event& event, Box& returnButton,
 	vector<Box>& levelButtons, Joc& minesweper, TextBox& rowsTextBox,
 	TextBox& columnsTextBox, TextBox& minesTextBox, Box& startButton, Text& errorMessage) {
 
+
+	while(event.type == Event::MouseButtonPressed) {
+
+	}
+
 	rowsTextBox.handleEvent(event);
 	columnsTextBox.handleEvent(event);
 	minesTextBox.handleEvent(event);
