@@ -9,3 +9,6 @@ Minesweeper is a single-player puzzle game. The objective is to clear a rectangu
  - User-friendly interface
  - Timer to track your progress
  - High scores
+
+
+![image](https://github.com/user-attachments/assets/09097605-4260-4a76-a8d2-5fb76e6f9c78)
